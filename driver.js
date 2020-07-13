@@ -15,7 +15,7 @@ connection.connect(function(err) {
     console.log('Connected as id ' + connection.threadId);
 });
 
-connection.query('SELECT * FROM employee', function (error, results, fields) {
+connection.query('SELECT * FROM Users', function (error, results, fields) {
     if (error)
         throw error;
 

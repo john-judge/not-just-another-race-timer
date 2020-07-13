@@ -1,34 +1,42 @@
-var http = require('http');
-var mysql = require('mysql');
+let express = require("express");
+let mysql = require('mysql');
+let port = 50000;
 
+const app = express();
 
-var connection = mysql.createConnection({
+let pool = mysql.createPool({
+    connectionLimit : 100,
     host     : 'localhost',
     database : 'jmjudge2_njart_db',
     user     : 'jmjudge2_user',
     password : '^(nGbTxd{1Rp',
 });
 
-var server = http.createServer(function(req, res) {
-    res.writeHead(200, {'Content-Type': 'text/plain'});
-    var message = 'Created server with:',
-        version = 'NodeJS ' + process.versions.node + '\n',
-        response = [message, version].join('\n');
-    res.end(response);
-});
-server.listen();
 
 
-/*
-connection.connect(function(err) {
-    if (err) {
-        console.error('Error connecting: ' + err.stack);
-        return;
-    }
-
-    console.log('Connected as id ' + connection.threadId);
+app.get("/not-just-another-race-timer",(req,resp) => {
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        console.log('connected as id ' + connection.threadId);
+        connection.query('SELECT * FROM Users', (err, rows,fields) => {
+            // call back function
+            connection.release(); // return the connection to pool
+            if(err) throw err;
+            console.log(rows[0].userID);
+            resp.json(rows);
+        });
+    });
 });
 
 
-connection.end();
-*/
+
+app.listen(port, () => {
+    console.log('Server is running at port ' + port);
+});
+
+
+
+
+
+
+
