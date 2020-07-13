@@ -1,5 +1,5 @@
 var http = require('http');
-ql      = require('mysql');
+var mysql = require('mysql');
 
 
 var connection = mysql.createConnection({
@@ -9,6 +9,17 @@ var connection = mysql.createConnection({
     password : '^(nGbTxd{1Rp',
 });
 
+var server = http.createServer(function(req, res) {
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    var message = 'Created server with:',
+        version = 'NodeJS ' + process.versions.node + '\n',
+        response = [message, version].join('\n');
+    res.end(response);
+});
+server.listen();
+
+
+/*
 connection.connect(function(err) {
     if (err) {
         console.error('Error connecting: ' + err.stack);
@@ -18,12 +29,6 @@ connection.connect(function(err) {
     console.log('Connected as id ' + connection.threadId);
 });
 
-var server = http.createServer(function(req, res) {
-    res.writeHead(200, {'Content-Type': 'text/plain'});
-    var message = 'Created server!\n',
-        version = 'NodeJS ' + process.versions.node + '\n',
-        response = [message, version].join('\n');
-    res.end(response);
-});
-server.listen();
+
 connection.end();
+*/
