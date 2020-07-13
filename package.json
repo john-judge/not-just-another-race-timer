@@ -1,0 +1,11 @@
+{
+  "name": "not-just-another-race-timer",
+  "version": "1.0.0",
+  "description": "Not Just Another Race Timer",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
