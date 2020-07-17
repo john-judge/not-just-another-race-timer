@@ -25,6 +25,8 @@ To have code changes be reflected in the web app (http://jmjudge2.web.illinois.e
 
 Please create a new branch to store your commits when creating new functionality, then merge back to `master` when confirmed to work.
 
+# Tables
+
 `Users(`<ins>`userID`</ins>`, name, gender, age, teamID)`
  
 `ParticipatesIn(`<ins>`userID`</ins>`,`<ins>`eventID`</ins>`, rank)`
