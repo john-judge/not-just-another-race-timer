@@ -27,6 +27,8 @@ Please create a new branch to store your commits when creating new functionality
 
 # Tables
 
+This is the most up-to-date source of information on the database structure. The ER/UML diagrams that follow are out of date.
+
 `Users(`<ins>`userID`</ins>`, name, gender, age, teamID)`
  
 `ParticipatesIn(`<ins>`userID`</ins>`,`<ins>`eventID`</ins>`, rank)`
