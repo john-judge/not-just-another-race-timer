@@ -1,6 +1,8 @@
  # Project Description
  
   [This web application is not just another race timer.](https://wiki.illinois.edu/wiki/x/1pxHKw)
+  
+  [Requirements](https://wiki.illinois.edu/wiki/display/CS411SU20/Project+Track+1)
 
 # cPanel Instructions for collaborators
 
@@ -26,13 +28,15 @@ The web server is set up with **node.js**. To run the server script from the Ter
   
 To have code changes be reflected in the web app (http://jmjudge2.web.illinois.edu/not-just-another-race-timer), you need to restart the app from **cPanel > Software > Setup Node.js App > Restart the Application**
 
-Test the website in browser. View the Console and debug Sources from **Chrome > CTRL + SHIFT + I**.
 
 
 
 # Client-Side Scripting
 Will be done in Javascript.
 So far we only serve `home.html`.
+
+To debug the client-side JS code, view the Console and debug Sources from **Chrome > CTRL + SHIFT + I**.
+
 
 ## Data Collection
 
