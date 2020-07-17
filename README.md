@@ -3,6 +3,7 @@
   [This web application is not just another race timer.](https://wiki.illinois.edu/wiki/x/1pxHKw)
 
 # cPanel Instructions for collaborators
+
 I've given you cPanel access to cPanel account "jmjudge2". Login with your own credentials. 
 
 From **cPanel > Advanced > Terminal** run:
@@ -13,7 +14,7 @@ source /home/jmjudge2/nodevenv/not-just-another-race-timer/10/bin/activate && cd
  
  This will bring you to the directory which holds this repository's contents, and also activates the virtual environment. You can use cPanel's file editor from **Commonly Used Features > File Manager**, or use your own local editor and push/pull changes to this repo.
  
-
+Please create a new branch to store your commits when creating new functionality, then merge back to `master` when confirmed to work.
  
 # Web Server
   
@@ -27,7 +28,7 @@ To have code changes be reflected in the web app (http://jmjudge2.web.illinois.e
 
 Test the website in browser. View the Console and debug Sources from **Chrome > CTRL + SHIFT + I**.
 
-Please create a new branch to store your commits when creating new functionality, then merge back to `master` when confirmed to work.
+
 
 # Client-Side Scripting
 Will be done in Javascript.
@@ -44,6 +45,14 @@ Browser will also be capturing time stamps.
  The Database structure (MySQL) can be edited from **cPanel > Databases > phpMyAdmin**, where 
 `jmjudge2\_njart\_db `
   contains the tables used by this web app.
+  
+## Triggers and Stored Procedures
+Both are found in **cPanel > Databases > phpMyAdmin**
+
+Go to **cPanel > Databases > MySQL Databases** in
+`jmjudge2\_njart\_db `
+
+Stored procedures are edited in the **Routines** tab. Triggers are edited in the **Triggers** tab. Any SQL code can also be run on the database in the **SQL** tab.
 
 ## Tables Schema
 This is the most up-to-date source of information on the database structure. The ER/UML diagrams that follow are out of date.
