@@ -1,4 +1,6 @@
-[This web application is not just another race timer.](https://wiki.illinois.edu/wiki/x/-5RHKw)
+ # Project Description
+ 
+  [This web application is not just another race timer.](https://wiki.illinois.edu/wiki/x/1pxHKw)
 
 # cPanel Instructions for collaborators
 I've given you cPanel access to cPanel account "jmjudge2". Login with your own credentials. 
@@ -11,9 +13,7 @@ source /home/jmjudge2/nodevenv/not-just-another-race-timer/10/bin/activate && cd
  
  This will bring you to the directory which holds this repository's contents, and also activates the virtual environment. You can use cPanel's file editor from **Commonly Used Features > File Manager**, or use your own local editor and push/pull changes to this repo.
  
- # Project Description
- 
-  [Link to wiki page](https://wiki.illinois.edu/wiki/x/1pxHKw)
+
  
 # Web Server
   
