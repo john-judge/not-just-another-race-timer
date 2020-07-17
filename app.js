@@ -15,6 +15,7 @@ let pool = mysql.createPool({
 
 //app.use(express.bodyParser());
 
+
 app.get("/not-just-another-race-timer",function  (req,resp) {
     
     pool.getConnection((err, connection) => {
@@ -30,7 +31,6 @@ app.get("/not-just-another-race-timer",function  (req,resp) {
     });
 	
 });
-
 
 app.post("/not-just-another-race-timer",(req,resp) => {
     pool.getConnection((err, connection) => {
