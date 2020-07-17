@@ -25,6 +25,8 @@ The web server is set up with **node.js**. To run the server script from the Ter
   
 To have code changes be reflected in the web app (http://jmjudge2.web.illinois.edu/not-just-another-race-timer), you need to restart the app from **cPanel > Software > Setup Node.js App > Restart the Application**
 
+Test the website in browser. View the Console and debug Sources from **Chrome > CTRL + SHIFT + I**.
+
 Please create a new branch to store your commits when creating new functionality, then merge back to `master` when confirmed to work.
 
 # Client-Side Scripting
