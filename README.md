@@ -18,7 +18,7 @@ source /home/jmjudge2/nodevenv/not-just-another-race-timer/10/bin/activate && cd
  
  This will bring you to the directory which holds this repository's contents, and also activates the virtual environment. You can use cPanel's file editor from **Commonly Used Features > File Manager**, or use your own local editor and push/pull changes to this repo.
  
-Please create a new branch to store your commits when creating new functionality, then merge back to `master` when confirmed to work.
+For edits to the web server or client side HTML/JS, create a new branch to store your commits when creating new functionality, then merge back to `master`.
  
 # Web Server
   
