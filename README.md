@@ -65,7 +65,7 @@ This is the most up-to-date source of information on the database structure. The
 
 `Users(`<ins>`userID`</ins>`, name, gender, age, teamID)`
  
-`ParticipatesIn(`<ins>`userID`</ins>`,`<ins>`eventID`</ins>`, rank)`
+`ParticipatesIn(`<ins>`userID`</ins>`,`<ins>`eventID`</ins>`, bibNumber, rank)`
 
 `Spectates(`<ins>`userID`</ins>`, `<ins>`eventID`</ins>`, `<ins>`athleteID`</ins>`, timestamp, latitude, longitude, comment)`
  
