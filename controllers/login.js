@@ -1,8 +1,7 @@
 var Cryptr = require('cryptr');
 cryptr = new Cryptr('dhsf^3##*(YV#Vy8');
  
-var connection = require('./../config'); // non-pooled connection
-module.exports.authenticate=function(req,res){
+module.exports.login=function(req,res,connection){
     var email=req.body.email;
     var password=req.body.password;
    
@@ -11,7 +10,7 @@ module.exports.authenticate=function(req,res){
         if (error) {
           res.json({
             status:false,
-            message:'there are some errors with the query: ' + error
+            message:'there are some errors with the login query: ' + error
             });
       }else{
        

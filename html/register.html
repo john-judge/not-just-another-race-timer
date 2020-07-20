@@ -1,11 +1,19 @@
-<html>  
+<html>
+    
+<head>
+
+	<meta charset="UTF-8">
+	<title>nJART Registration</title>
+	<link rel="shortcut icon" href="/not-just-another-race-timer/favicon.ico" type="image/x-icon" />
+	
+</head>
 <body>  
  
 <form action="/not-just-another-race-timer/controllers/register" method="POST">  
-First Name: <input type="text" name="name">  
+Name: <input type="text" name="name" autocomplete="name">  
    
-Email: <input type="text" name="email">
-Password: <input type="password" name="password">
+Email: <input type="text" name="email" autocomplete="email">
+Password: <input type="password" name="password" autocomplete="new-password">
    
 <input type="submit" value="Submit">  
 </form>

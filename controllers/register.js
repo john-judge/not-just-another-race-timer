@@ -1,9 +1,9 @@
 var Cryptr = require('cryptr');
 var express=require("express");
-var connection = require('./../config'); // non-pooled connection
+
 cryptr = new Cryptr('dhsf^3##*(YV#Vy8');
  
-module.exports.register=function(req,res){
+module.exports.register=function(req,res,connection){
     var encryptedString = cryptr.encrypt(req.body.password);
     var users={
         "name":req.body.name,
@@ -24,4 +24,4 @@ module.exports.register=function(req,res){
         });
       }
     });
-}
+};
