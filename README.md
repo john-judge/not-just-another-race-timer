@@ -27,11 +27,18 @@ The web server is set up with **node.js**. To run the server script from the Ter
 `
   node app.js
 `
-  
-To have code changes be reflected in the web app (http://jmjudge2.web.illinois.edu/not-just-another-race-timer), you need to restart the app from **cPanel > Software > Setup Node.js App > Restart the Application**
+To run it indefinitely:
 
-
-
+`
+nohup node app.js > output.log &
+`
+ 
+ Check if process is running:
+`
+pgrep -l "node"
+`
+Due to npm install package, changes to `app.js` will get carried into the web server automatically.
+If we find problems with the web server stopping, we may need to set up a Cron Job in cPanel.
 
 # Client-Side Scripting
 Will be done in Javascript.
@@ -39,6 +46,7 @@ So far we only serve `home.html`.
 
 To debug the client-side JS code, view the Console and debug Sources from **Chrome > CTRL + SHIFT + I**.
 
+To have HTML changes be reflected in the web app (http://jmjudge2.web.illinois.edu/not-just-another-race-timer), you may need to restart the app from **cPanel > Software > Setup Node.js App > Restart the Application**
 
 ## Data Collection
 
