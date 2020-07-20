@@ -26,7 +26,7 @@ app.get("/not-just-another-race-timer",function  (req,resp) {
             connection.release(); // return the connection to pool
             if(err) throw err;
             console.log(__dirname);
-            resp.sendfile(__dirname+"/home.html");
+            resp.sendfile(__dirname+"/html/home.html");
         });
     });
 	
