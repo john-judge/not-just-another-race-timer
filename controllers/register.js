@@ -1,14 +1,14 @@
 var Cryptr = require('cryptr');
-var express=require("express");
+var jwt=require('jsonwebtoken'); // client will store a web token for auth
 
 cryptr = new Cryptr('dhsf^3##*(YV#Vy8');
  
 module.exports.register=function(req,res,connection){
     var encryptedString = cryptr.encrypt(req.body.password);
     var users={
-        "name":req.body.name,
-        "email":req.body.email,
-        "password":encryptedString
+        "name":connection.escape(req.body.name),
+        "email":connection.escape(req.body.email),
+        "password":connection.escape(encryptedString)
     };
     connection.query('INSERT INTO Users SET ?',users, function (error, results, fields) {
       if (error) {
@@ -17,10 +17,12 @@ module.exports.register=function(req,res,connection){
             message:'there are some errors with the insertion query'+error
         });
       }else{
+          var token=jwt.sign(users.email,users.password);
           res.json({
             status:true,
             data:results,
-            message:'user registered sucessfully'
+            message:'user registered sucessfully!',
+            token:token
         });
       }
     });

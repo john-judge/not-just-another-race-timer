@@ -14,7 +14,6 @@ let pool = mysql.createPool({
     password : '^(nGbTxd{1Rp',
 });
 
-
 var loginController=require('./controllers/login');
 var registerController=require('./controllers/register');
  
@@ -69,7 +68,6 @@ app.post("/not-just-another-race-timer/controllers/register",(req,resp) => {
     });
 });
 
-
 app.get("/not-just-another-race-timer/register",function  (req,resp) {
     pool.getConnection((err, connection) => {
         if(err) throw err;
@@ -85,9 +83,6 @@ app.get("/not-just-another-race-timer/login",function  (req,resp) {
         resp.sendFile(__dirname+"/html/login.html");
     });
 });
-
-
-
 
 app.listen(port, () => {
     console.log('Server is running at port ' + port);
