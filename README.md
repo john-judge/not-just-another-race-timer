@@ -71,7 +71,7 @@ This is the most up-to-date source of information on the database structure. The
  
 `Events(`<ins>`eventID`</ins>`, eventName, distance, startTime, mapID)`
  
-`Teams(`<ins>`teamID`</ins>`, teamName, score, teamCaptain)`
+`Teams(`<ins>`teamID`</ins>`, teamName, teamCaptain)`
 
 `Manages(`<ins>`userID`</ins>`, `<ins>`eventID`</ins>`)`
 
