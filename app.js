@@ -2,8 +2,26 @@ let express = require("express");
 let mysql = require('mysql');
 let fs = require('fs');
 let port = 50000;
+var bodyParser = require('body-parser');
 
 const app = express();
+
+var authenticateController=require('./controllers/authenticate');
+var registerController=require('./controllers/register');
+ 
+app.use(bodyParser.urlencoded({extended:true}));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+/* route to handle login and registration */
+app.post('/not-just-another-race-timer/api/register',registerController.register);
+app.post('/not-just-another-race-timer/api/authenticate',authenticateController.authenticate);
+ 
+console.log(authenticateController);
+app.post('/not-just-another-race-timer/controllers/register', registerController.register);
+app.post('/not-just-another-race-timer/controllers/authenticate', authenticateController.authenticate);
+
+
 
 let pool = mysql.createPool({
     connectionLimit : 100,
@@ -13,11 +31,7 @@ let pool = mysql.createPool({
     password : '^(nGbTxd{1Rp',
 });
 
-//app.use(express.bodyParser());
-
-
 app.get("/not-just-another-race-timer",function  (req,resp) {
-    
     pool.getConnection((err, connection) => {
         if(err) throw err;
         console.log('connected as id ' + connection.threadId);
@@ -26,17 +40,16 @@ app.get("/not-just-another-race-timer",function  (req,resp) {
             connection.release(); // return the connection to pool
             if(err) throw err;
             console.log(__dirname);
-            resp.sendfile(__dirname+"/html/home.html");
+            resp.sendFile(__dirname+"/html/home.html");
         });
     });
-	
 });
 
 app.post("/not-just-another-race-timer",(req,resp) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
         console.log('connected as id ' + connection.threadId);
-        connection.query('SELECT * FROM Users', (err, rows) => {
+        connection.query('SELECT name,email,gender,age,teamID FROM Users', (err, rows) => {
             // call back function
             connection.release(); // return the connection to pool
             if(err) throw err;
@@ -45,6 +58,21 @@ app.post("/not-just-another-race-timer",(req,resp) => {
     });
 });
 
+app.get("/not-just-another-race-timer/login",function  (req,resp) {
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        console.log('connected as id ' + connection.threadId);
+        resp.sendFile(__dirname+"/html/login.html");
+    });
+});
+
+app.get("/not-just-another-race-timer/register",function  (req,resp) {
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        console.log('connected as id ' + connection.threadId);
+        resp.sendFile(__dirname+"/html/register.html");
+    });
+});
 
 
 app.listen(port, () => {
