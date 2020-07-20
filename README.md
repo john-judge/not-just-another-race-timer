@@ -65,7 +65,7 @@ This is the most up-to-date source of information on the database structure. The
 
 `Users(`<ins>`userID`</ins>`, name, gender, age, teamID)`
  
-`ParticipatesIn(`<ins>`userID`</ins>`,`<ins>`eventID`</ins>`, bibNumber, rank)`
+`ParticipatesIn(`<ins>`userID`</ins>`,`<ins>`eventID`</ins>`, bibNumber, rank, finishTime)`
 
 `Spectates(`<ins>`userID`</ins>`, `<ins>`eventID`</ins>`, `<ins>`athleteID`</ins>`, timestamp, latitude, longitude, comment)`
  
@@ -77,9 +77,10 @@ This is the most up-to-date source of information on the database structure. The
 
 `CourseWaypoints(`<ins>`mapID`</ins>`, `<ins>`pointID`</ins>`, latitude, longitude)`
 
+## UML Diagrams
+![UML diagram actual](https://github.com/john-judge/not-just-another-race-timer/blob/master/images/autoUMLnjart.png)
+
+
 ## ER Diagram
 ![ER diagram](https://github.com/john-judge/not-just-another-race-timer/blob/master/images/Database%20ER%20--%20Race%20Timer%20(1).png)
 
-## UML Diagrams
-![UML diagram actual](https://github.com/john-judge/not-just-another-race-timer/blob/master/images/autoUMLnjart.png)
-![UML diagram](https://github.com/john-judge/not-just-another-race-timer/blob/master/images/UML_race_timer.png)
