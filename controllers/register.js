@@ -6,9 +6,9 @@ cryptr = new Cryptr('dhsf^3##*(YV#Vy8');
 module.exports.register=function(req,res,connection){
     var encryptedString = cryptr.encrypt(req.body.password);
     var users={
-        "name":connection.escape(req.body.name),
-        "email":connection.escape(req.body.email),
-        "password":connection.escape(encryptedString)
+        "name":req.body.name,
+        "email":req.body.email,
+        "password":encryptedString
     };
     connection.query('INSERT INTO Users SET ?',users, function (error, results, fields) {
       if (error) {

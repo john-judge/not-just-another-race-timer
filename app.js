@@ -36,7 +36,7 @@ function isAuthenticated(req, res, next) {
             
             if (err) {  
                 res.status(500).json({ error: "Not Authorized" });
-                throw new Error("Not Authorized");
+                //throw new Error("Not Authorized");
             }
             // if the JWT is valid, continue to endpoint
             console.log("Authenticated");
@@ -46,7 +46,7 @@ function isAuthenticated(req, res, next) {
         // No authorization header exists on request
         res.status(500).json({ error: "Not Authorized: no header" });
         console.log(req);
-        throw new Error("Not Authorized: no header");
+        //throw new Error("Not Authorized: no header");
     }
 }
 
