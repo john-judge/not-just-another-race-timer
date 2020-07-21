@@ -1,5 +1,6 @@
 var Cryptr = require('cryptr');
 var jwt=require('jsonwebtoken'); // client will store a web token for auth
+var fs = require('fs');
 
 cryptr = new Cryptr('dhsf^3##*(YV#Vy8');
  
@@ -18,12 +19,16 @@ module.exports.login=function(req,res,connection){
         if(results.length >0){
             decryptedString = cryptr.decrypt(results[0].password);
             if(password==decryptedString){
-                var token=jwt.sign(email,password);
+                let privateKey = fs.readFileSync('./privateKey.pem','utf-8');
+                var token=jwt.sign(email,privateKey, { algorithm: 'HS256'});
                 res.json({
                     status:true,
                     message:'Successfully authenticated',
+                    userID: results[0].userID,
                     token:token
                 });
+                
+                
             }else{
                 res.json({
                   status:false,

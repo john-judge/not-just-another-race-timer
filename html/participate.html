@@ -1,28 +1,22 @@
 <!doctype html>
 <html lang="en">
 <head>
-    
-    <style>
-    table, th, td {
-      border: 1px solid black;
-      border-collapse: collapse;
-    }
-    </style>
+
 	<meta charset="UTF-8">
-	<title>nJA Race Timer</title>
+	<title>Race Sign Up</title>
 	<link rel="shortcut icon" href="/not-just-another-race-timer/favicon.ico" type="image/x-icon" />
-	
+
 	<script src= 
 "https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"> 
     </script> 
 	
 </head>
+ 
 
 
 <body>
     <form id="submit" method="post" action="/">
-	    <input type="text" name="name" placeholder="Full Name"><br>
-	    <input type="number" name="age" placeholder="Age"><br>
+        <input type="text" name="eventName" placeholder="Find An Event..."><br>
 	    <input type="submit" value="Submit">
 	</form>
 	
@@ -36,8 +30,15 @@
 	 $(document).ready(function  () {
 	 	$("#submit").on("submit",function  (e) {
 	 		e.preventDefault();
-	 		console.log();
-	 		$.post("/not-just-another-race-timer",$(this).serialize(), function(  data ) {
+	 		let token = localStorage.getItem('token');
+	 		let userID = localStorage.getItem('userID');
+	 		//$(this).userID = userID;
+	 		//$(this).token = token;
+	 		var formAndAuth = $(this).serialize() + 
+	 		            "&token=" + token +
+	 		            "&userID=" + userID;
+	 		console.log(formAndAuth);
+	 		$.post("/not-just-another-race-timer/participate",formAndAuth, function(  data ) {
 			  tableJSONtoHTML(data);
 			});
 	 	})
@@ -82,5 +83,14 @@
         divContainer.appendChild(table);
 	 }
  	</script>
+
+    <form action="/not-just-another-race-timer/controllers/participate" method="POST"> 
+    
+    Event: <input type="text" name="name" autocomplete="name">  
+    
+    Email: <input type="text" name="email" autocomplete="email">
+    <input type="submit" value="Submit">  
+    </form>
 </body>
-</html>
+ 
+</html>  

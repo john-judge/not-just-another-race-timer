@@ -1,21 +1,47 @@
-<html>  
-
+<!doctype html>
+<html lang="en">
 <head>
 
 	<meta charset="UTF-8">
 	<title>nJART Login</title>
 	<link rel="shortcut icon" href="/not-just-another-race-timer/favicon.ico" type="image/x-icon" />
 	
+	<script src= 
+"https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"> 
+    </script> 	
+	
 </head>
-<body>  
- 
-<form action="/not-just-another-race-timer/controllers/login" method="POST"> 
+<body>
+    <form id="submit" method="post" action="/">
+	    Name: <input type="text" name="name" autocomplete="name">  
+	    Email: <input type="text" name="email" autocomplete="email">
+	    Password: <input type="password" name="password" autocomplete="current-password">
+	    <input type="submit" value="Submit">
+	</form>
+	
+	<!-- This table displays the query results -->
+	<div class="container-fluid" id = "userTable">
+    </div>
 
-Name: <input type="text" name="name" autocomplete="name">  
+	 <script>
+	 
+	 
+	 $(document).ready(function  () {
+	 	$("#submit").on("submit",function  (e) {
+	 		e.preventDefault();
+	 		console.log();
+	 		$.post("/not-just-another-race-timer/controllers/login",$(this).serialize(), function(  data ) {
+
+                localStorage.setItem('token',data.token);
+                localStorage.setItem('userID',data.userID);
+			});
+	 	})
+	 });
+ 
+	 </script>
    
-Email: <input type="text" name="email" autocomplete="email">
-Password: <input type="password" name="password" autocomplete="current-password">
-<input type="submit" value="Submit">  
-</form>
+
+
 </body>  
 </html>  
+
