@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+
+	<meta charset="UTF-8">
+	<title>Event Manager</title>
+	<link rel="shortcut icon" href="/not-just-another-race-timer/favicon.ico" type="image/x-icon" />
+	<script src= 
+"/not-just-another-race-timer/utility/utility.js"> 
+    </script> 
+	<script src= 
+"https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"> 
+    </script> 
+	
+</head>
+ 
+
+
+<body>
+    
+    <!-- Button to create new event. Inserts into Event table and Manages -->
+    <form id="create_new_event" method="post" action="/">
+	    <input type="text" name="eventName" placeholder="New Event Name"><br>
+	    <input type="submit" value="Create New Event">
+	</form>
+    
+    <!-- Query all events managed by the logged-in user -->
+    <form id="refresh_my_events" method="post" action="/">
+	    <input type="submit" value="Refresh My Events">
+	</form>
+	
+	<!-- This table displays the query results -->
+	<div class="container-fluid" id = "eventTable">
+    </div>
+    
+	<!-- This container is the GUI to edit the event -->
+	<div class="container-fluid" id = "eventEditor">
+    </div>
+
+	 <script>
+	 
+	 
+	 $(document).ready(function  () {
+	 	$("#create_new_event").on("submit",function  (e) {
+	 		e.preventDefault();
+
+	 		var formAndAuth = $(this).serialize() + 
+	 		            "&token=" + localStorage.getItem('token') +
+	 		            "&userID=" + localStorage.getItem('userID');
+	 		
+	 		$.post("/not-just-another-race-timer/event_manager",formAndAuth, function(  data ) {
+			  var divContainer = document.getElementById("eventTable");
+			  var tblHTML = tableJSONtoHTML(data);
+			  divContainer.innerHTML = "";
+              divContainer.appendChild(tblHTML);
+              
+              /* TO DO: Add button column to table to open event editor  */
+              //var eventID = ...
+              //openEventEditor(eventID); // generate event editor on this page 
+
+			});
+	 	})
+	 	
+	 	$("#refresh_my_events").on("submit",function  (e) {
+	 		e.preventDefault();
+
+	 		var formAndAuth = $(this).serialize() + 
+	 		            "&token=" + localStorage.getItem('token') +
+	 		            "&userID=" + localStorage.getItem('userID');
+	 		
+	 		$.post("/not-just-another-race-timer/event_manager",formAndAuth, function(  data ) {
+			  var divContainer = document.getElementById("eventTable");
+			  var tblHTML = tableJSONtoHTML(data);
+			  divContainer.innerHTML = "";
+              divContainer.appendChild(tblHTML);
+              
+              /* TO DO: Add button column to table to open event editor  */
+              //var eventID = ...
+              //openEventEditor(eventID); // generate event editor on this page 
+
+			});
+	 	})
+	 });
+	 
+	 
+    function openEventEditor(eventID) {
+    // Triggered by button in eventTable.
+                  
+                  // Button to launch 
+    }
+	 
+ 	</script>
+	 
+	 
+
+</body>
+ 
+</html>  

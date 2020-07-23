@@ -128,6 +128,37 @@ app.post("/not-just-another-race-timer/participate",isAuthenticated, function  (
     });
 });
 
+app.get("/not-just-another-race-timer/event_manager", function  (req,resp) {
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        console.log('connected event_manager get as id ' + connection.threadId);
+        resp.sendFile(__dirname+"/html/event_manager.html");
+    });
+});
+
+app.post("/not-just-another-race-timer/event_manager",isAuthenticated, function  (req,resp) {
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        console.log('connected as id ' + connection.threadId);
+  
+        if(req.body.eventName) { // insert new event
+            var newEventID;
+            connection.query('INSERT INTO Events(eventName) VALUES(?)',[req.body.eventName], (err, result, fields) => {
+                if(err) throw err;
+                connection.query('INSERT INTO Manages(userID,eventID) VALUES(?,?)',[req.body.userID,parseInt(result.insertId)], (err, result, fields) => {
+                if(err) throw err;
+                console.log(result);
+                });
+            });
+        }
+        
+        connection.query('SELECT eventName As Event,distance AS Distance,startTime AS Started FROM Events NATURAL JOIN Manages WHERE userID = ?',[req.body.userID], (err, rows) => {
+            if(err) throw err;
+            resp.json(rows);
+        });
+    });
+});
+
 
 app.listen(port, () => {
     console.log('Server is running at port ' + port);
