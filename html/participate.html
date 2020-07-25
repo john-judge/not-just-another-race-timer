@@ -10,8 +10,8 @@
     </script> 
 	<script src= 
 "https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"> 
-    </script> 
-	
+    </script>
+    <link href="/not-just-another-race-timer/css/form.css" rel="stylesheet" type="text/css">
 </head>
  
 
@@ -22,36 +22,51 @@
     <br>
     <br>
             
-    <form id="submit" method="post" action="/">
-        <input type="text" name="eventName" placeholder="Find An Event..."><br>
+    <form id="find_events" method="post" action="/">
+        <input type="text" id="queryEventName" name="eventName" placeholder="Search Events by Keyword..."><br>
 	    <input type="submit" value="Submit">
 	</form>
 	
-	<!-- This table displays the query results -->
-	<div class="container-fluid" id = "userTable">
+	
+	<div class="container-fluid" id = "querySummary">
     </div>
+    <!-- This table displays the query results -->
+	<div class="container-fluid" id = "eventTable">
+    </div>
+    
 
 	 <script>
 	 
 	 
 	 $(document).ready(function  () {
-	 	$("#submit").on("submit",function  (e) {
+	 	$("#find_events").on("submit",function  (e) {
 	 		e.preventDefault();
 	 		let token = localStorage.getItem('token');
 	 		let userID = localStorage.getItem('userID');
 	 		//$(this).userID = userID;
 	 		//$(this).token = token;
+	 		var queryEventName = document.getElementById("queryEventName").value;
 	 		var formAndAuth = $(this).serialize() + 
 	 		            "&token=" + token +
 	 		            "&userID=" + userID;
 	 		console.log(formAndAuth);
 	 		$.post("/not-just-another-race-timer/participate",formAndAuth, function(  data ) {
-			  tableJSONtoHTML(data);
+			  var divContainer = document.getElementById("eventTable");
+			  var tblHTML = tableJSONtoHTML(data);
+			  divContainer.innerHTML = "";
+              divContainer.appendChild(tblHTML);
+              
+              // count events and display
+              if(queryEventName == "") queryEventName = "all events";
+              else queryEventName = "\"" + queryEventName + "\"";
+              var querySummaryText = "Search for " + queryEventName + " returned " + data.length + " results."
+			  var divContainer = document.getElementById("querySummary");
+              divContainer.innerHTML = querySummaryText;
+              
 			});
 	 	})
 	 });
 	 
-
 
 
  	</script>

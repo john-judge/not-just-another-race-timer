@@ -50,9 +50,26 @@ function isAuthenticated(req, res, next) {
     }
 }
 
-/* route to handle login and registration */
-app.post('/not-just-another-race-timer/api/register',registerController.register);
-app.post('/not-just-another-race-timer/api/login',loginController.login);
+/* route to handle registration request */
+app.post('/not-just-another-race-timer/api/register', function (req,resp) {
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        console.log('connected home get as id ' + connection.threadId);
+        registerController.register(req,resp,connection);
+        connection.release(); // return the connection to pool
+    });
+});
+
+/* route to handle login request */
+app.post('/not-just-another-race-timer/api/login', function (req,resp) {
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        console.log('connected home get as id ' + connection.threadId);
+        loginController.login(req,resp,connection);
+        connection.release(); // return the connection to pool
+    });
+});
+
 
 app.get("/not-just-another-race-timer",function  (req,resp) {
     pool.getConnection((err, connection) => {
@@ -67,7 +84,10 @@ app.post("/not-just-another-race-timer",(req,resp) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
         console.log('connected as id ' + connection.threadId);
-        connection.query('SELECT name,email,gender,age,teamID FROM Users', (err, rows) => {
+        var eventFilter = "%" + req.body.eventName + "%";
+        var athleteFilter = "%" + req.body.athleteName + "%";
+        console.log("Filtering users: " + eventFilter + ",  " + athleteFilter);
+        connection.query('SELECT eventName,name,gender,age,teamName AS Team FROM ParticipatesIn NATURAL JOIN Users NATURAL JOIN Events NATURAL JOIN Teams WHERE eventName LIKE ? AND name LIKE ?',[eventFilter,athleteFilter], (err, rows) => {
             // call back function
             connection.release(); // return the connection to pool
             if(err) throw err;
@@ -81,6 +101,7 @@ app.post("/not-just-another-race-timer/controllers/login",(req,resp) => {
         if(err) throw err;
         console.log('connected login post as id ' + connection.threadId);
         loginController.login(req,resp,connection);
+        connection.release(); // return the connection to pool
     });
 });
 
@@ -89,6 +110,7 @@ app.post("/not-just-another-race-timer/controllers/register",(req,resp) => {
         if(err) throw err;
         console.log('connected register post as id ' + connection.threadId);
         registerController.register(req,resp,connection);
+        connection.release(); // return the connection to pool
     });
 });
 
@@ -96,6 +118,7 @@ app.get("/not-just-another-race-timer/register",function  (req,resp) {
     pool.getConnection((err, connection) => {
         if(err) throw err;
         console.log('connected register get as id ' + connection.threadId);
+        connection.release(); // return the connection to pool
         resp.sendFile(__dirname+"/html/register.html");
     });
 });
@@ -104,6 +127,7 @@ app.get("/not-just-another-race-timer/login",function  (req,resp) {
     pool.getConnection((err, connection) => {
         if(err) throw err;
         console.log('connected login get as id ' + connection.threadId);
+        connection.release(); // return the connection to pool
         resp.sendFile(__dirname+"/html/login.html");
     });
 });
@@ -111,6 +135,7 @@ app.get("/not-just-another-race-timer/login",function  (req,resp) {
 app.get("/not-just-another-race-timer/participate", function  (req,resp) {
     pool.getConnection((err, connection) => {
         if(err) throw err;
+        connection.release(); // return the connection to pool
         console.log('connected participate get as id ' + connection.threadId);
         resp.sendFile(__dirname+"/html/participate.html");
     });
@@ -120,9 +145,11 @@ app.post("/not-just-another-race-timer/participate",isAuthenticated, function  (
     pool.getConnection((err, connection) => {
         if(err) throw err;
         console.log('connected as id ' + connection.threadId);
-        connection.query('SELECT * FROM Events', (err, rows) => {
+        var queryArg = "%" + req.body.eventName + "%";
+        connection.query('SELECT eventName AS Event,distance AS Distance FROM Events WHERE eventName LIKE ?',[queryArg], (err, rows) => {
             // call back function
             if(err) throw err;
+            connection.release(); // return the connection to pool
             resp.json(rows);
         });
     });
@@ -132,6 +159,7 @@ app.get("/not-just-another-race-timer/event_manager", function  (req,resp) {
     pool.getConnection((err, connection) => {
         if(err) throw err;
         console.log('connected event_manager get as id ' + connection.threadId);
+        connection.release(); // return the connection to pool
         resp.sendFile(__dirname+"/html/event_manager.html");
     });
 });
@@ -145,8 +173,10 @@ app.post("/not-just-another-race-timer/event_manager",isAuthenticated, function 
             var newEventID;
             connection.query('INSERT INTO Events(eventName) VALUES(?)',[req.body.eventName], (err, result, fields) => {
                 if(err) throw err;
+                connection.release(); 
                 connection.query('INSERT INTO Manages(userID,eventID) VALUES(?,?)',[req.body.userID,parseInt(result.insertId)], (err, result, fields) => {
                 if(err) throw err;
+                connection.release(); 
                 console.log(result);
                 });
             });
@@ -154,6 +184,7 @@ app.post("/not-just-another-race-timer/event_manager",isAuthenticated, function 
         
         connection.query('SELECT eventName As Event,distance AS Distance,startTime AS Started FROM Events NATURAL JOIN Manages WHERE userID = ?',[req.body.userID], (err, rows) => {
             if(err) throw err;
+            connection.release(); // return the connection to pool
             resp.json(rows);
         });
     });

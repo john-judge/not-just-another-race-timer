@@ -17,7 +17,7 @@
 	<script src= 
 "https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"> 
     </script> 
-	
+    <link href="/not-just-another-race-timer/css/form.css" rel="stylesheet" type="text/css">	
 </head>
 
 
@@ -38,10 +38,11 @@
     <br>
     <br>
     
-    <form id="submit" method="post" action="/">
-	    <input type="text" name="name" placeholder="Full Name"><br>
-	    <input type="number" name="age" placeholder="Age"><br>
-	    <input type="submit" value="Find All Users">
+    <form id="find_athletes" method="post" action="/">
+	    <input type="text" name="athleteName" placeholder="Filter Athletes by Name"><br>
+	    <input type="text" name="eventName" placeholder="Event Keyword"><br>
+	    <!-- <input type="number" name="age" placeholder="Age"><br> -->
+	    <input type="submit" value="Find Registered Athletes">
 	</form>
 	
 	<!-- This table displays the query results -->
@@ -52,9 +53,9 @@
 	 
 	 
 	 $(document).ready(function  () {
-	 	$("#submit").on("submit",function  (e) {
+	 	$("#find_athletes").on("submit",function  (e) {
 	 		e.preventDefault();
-	 		console.log();
+	 		console.log("Finding athletes...");
 	 		$.post("/not-just-another-race-timer",$(this).serialize(), function(  data ) {
 	 	      var divContainer = document.getElementById("userTable");
 			  var tblHTML = tableJSONtoHTML(data);
