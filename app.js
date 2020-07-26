@@ -79,14 +79,27 @@ app.get("/not-just-another-race-timer",function  (req,resp) {
 });
 
 /* Home page, find and spectate athletes */
-app.post("/not-just-another-race-timer",(req,resp) => {
+app.post("/not-just-another-race-timer/home",isAuthenticated,(req,resp) => {
     pool.getConnection((err, connection) => {
         if(err) throw err;
         console.log('connected as id ' + connection.threadId);
         var eventFilter = "%" + req.body.eventName + "%";
         var athleteFilter = "%" + req.body.athleteName + "%";
-        console.log("Filtering users: " + eventFilter + ",  " + athleteFilter);
-        connection.query('SELECT eventName,name,gender,age,teamName AS Team FROM ParticipatesIn NATURAL JOIN Users NATURAL JOIN Events NATURAL JOIN Teams WHERE eventName LIKE ? AND name LIKE ?',[eventFilter,athleteFilter], (err, rows) => {
+        connection.query('SELECT eventID AS EventID, eventName AS Event, name AS Athlete, bibNumber AS BibNumber FROM ParticipatesIn p NATURAL JOIN Users NATURAL JOIN Events WHERE eventName LIKE ? OR name LIKE ?',[eventFilter,athleteFilter], (err, rows) => {
+            connection.release(); 
+            if(err) throw err;
+            resp.json(rows);
+        });
+    });
+});
+
+/* Cancel registration */
+app.post("/not-just-another-race-timer/cancel_registration",isAuthenticated,(req,resp) => {
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        console.log('connected as id ' + connection.threadId);
+
+        connection.query('DELETE FROM ParticipatesIn WHERE eventID = ? AND userID = ?',[req.body.eventID,req.body.userID], (err, rows) => {
             connection.release(); 
             if(err) throw err;
             resp.json(rows);

@@ -51,6 +51,7 @@
     </div>
     <div class="collapse navbar-collapse" id="myNavbar">
       <ul class="nav navbar-nav">
+        <li><a href="/not-just-another-race-timer">Home</a></li>
         <li><a href="/not-just-another-race-timer/login">Login</a></li>
         <li><a href="/not-just-another-race-timer/register">Register</a></li>
         <li><a href="/not-just-another-race-timer/event_manager">Create Event</a></li>
@@ -68,6 +69,7 @@
     <div class="col-sm-3 sidenav hidden-xs">
       <h2>nJA Race Timer</h2>
       <ul class="nav nav-pills nav-stacked">
+        <li><a href="/not-just-another-race-timer">Home</a></li>
         <li><a href="/not-just-another-race-timer/login">Login</a></li>
         <li><a href="/not-just-another-race-timer/register">Register</a></li>
         <li><a href="/not-just-another-race-timer/event_manager">Create Event</a></li>
@@ -94,6 +96,7 @@
         Event ID: <input type="text" id="targetEventID" name="eventID" placeholder="Select an event..."><br><br>
         <input id="participate_button" type="submit" value="Sign up for...">
     </form>
+    <br><br>
 
     <div class="container-fluid" id = "querySummary">
     </div>
@@ -109,8 +112,7 @@
             e.preventDefault();
             let token = localStorage.getItem('token');
             let userID = localStorage.getItem('userID');
-            //$(this).userID = userID;
-            //$(this).token = token;
+
             var queryEventName = document.getElementById("queryEventName").value;
             var formAndAuth = $(this).serialize() +
                         "&token=" + token +

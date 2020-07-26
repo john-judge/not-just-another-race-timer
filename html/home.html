@@ -22,6 +22,14 @@
       height: 100%;
     }
 
+    td {border: 1px #DDD solid; padding: 5px; cursor: pointer;}
+    
+    /* Display of table row when selected */
+    .selected {
+        background-color: #A4D0EE; 
+        color: #FFF;
+    }        
+
     /* On small screens, set height to 'auto' for the grid */
     @media screen and (max-width: 767px) {
       .row.content {height: auto;}
@@ -45,10 +53,11 @@
         </div>
         <div class="collapse navbar-collapse" id="myNavbar">
           <ul class="nav navbar-nav">
-            <li class="active"><a href="/not-just-another-race-timer/login">Login</a></li>
+            <li class="active"><a href="/not-just-another-race-timer">Home</a></li>              
+            <li><a href="/not-just-another-race-timer/login">Login</a></li>
             <li><a href="/not-just-another-race-timer/register">Register</a></li>
             <li><a href="/not-just-another-race-timer/event_manager">Create Event</a></li>
-            <li><a href="/not-just-another-race-timer/participate">Participate Event</a></li>
+            <li><a href="/not-just-another-race-timer/participate">Participate In Event</a></li>
             <li><a href="/not-just-another-race-timer/create_team">Create Team</a></li>
             <li><a href="/not-just-another-race-timer/join_team">Join Team</a></li>
             <li><a href="/not-just-another-race-timer/rankings">Rankings</a></li>
@@ -66,10 +75,11 @@
     <div class="col-sm-3 sidenav hidden-xs">
       <h2>nJA Race Timer</h2>
       <ul class="nav nav-pills nav-stacked">
-        <li class="active"><a href="/not-just-another-race-timer/login">Login</a></li>
+        <li class="active"><a href="/not-just-another-race-timer">Home</a></li>
+        <li><a href="/not-just-another-race-timer/login">Login</a></li>
         <li><a href="/not-just-another-race-timer/register">Register</a></li>
         <li><a href="/not-just-another-race-timer/event_manager">Create Event</a></li>
-        <li><a href="/not-just-another-race-timer/participate">Participate Event</a></li>
+        <li><a href="/not-just-another-race-timer/participate">Participate In Event</a></li>
         <li><a href="/not-just-another-race-timer/create_team">Create Team</a></li>
         <li><a href="/not-just-another-race-timer/join_team">Join Team</a></li>
         <li><a href="/not-just-another-race-timer/rankings">Rankings</a></li>
@@ -79,7 +89,8 @@
 
     <div class="col-sm-9">
       <div class="well">
-        <h4>Find Athletes</h4><br>
+        <h3>Find Athletes</h3><br>
+        <h4>From here, you can check the roster for any race or cancel your registration in an event.</h4><br>
         
         <form id="find_athletes" method="post" action="/">
     	    <input type="text" name="athleteName" placeholder="Filter Athletes by Name"><br>
@@ -87,6 +98,14 @@
     	    <!-- <input type="number" name="age" placeholder="Age"><br> -->
     	    <input type="submit" value="Find Registered Athletes">
     	</form>
+    	
+    	<br><br>
+        <form id="cancel_registration" method="post" action="/">
+    	    <input type="text" id="cancel_event" name="eventID" placeholder="Select a row..."><br>
+    	    <!-- <input type="number" name="age" placeholder="Age"><br> -->
+    	    <input id="cancel_button" type="submit" value="Unregister From Race">
+    	</form>   
+    	<br><br>
     	
         <!-- This table displays the query results -->
         <div class="container-fluid" id = "userTable">
@@ -96,15 +115,54 @@
     	 $(document).ready(function  () {
     	 	$("#find_athletes").on("submit",function  (e) {
     	 		e.preventDefault();
-    	 		console.log("Finding athletes...");
-    	 		$.post("/not-just-another-race-timer",$(this).serialize(), function(  data ) {
+                let token = localStorage.getItem('token');
+                let userID = localStorage.getItem('userID');
+    
+                var formAndAuth = $(this).serialize() +
+                            "&token=" + token +
+                            "&userID=" + userID;    	 		
+    	 		$.post("/not-just-another-race-timer/home",formAndAuth, function(  data ) {
+    	 		  console.log(formAndAuth);
     	 	      var divContainer = document.getElementById("userTable");
     			  var tblHTML = tableJSONtoHTML(data);
+    			  addRowHandlers(tblHTML.childNodes[0],promptCancelRegister);
+
     			  divContainer.innerHTML = "";
                   divContainer.appendChild(tblHTML);
     			});
-    	 	})
+    	 	});
+    	 	
+       	 	$("#cancel_registration").on("submit",function  (e) {
+        	 		e.preventDefault();
+                    let token = localStorage.getItem('token');
+                    let userID = localStorage.getItem('userID');
+        
+                    var formAndAuth = $(this).serialize() +
+                                "&token=" + token +
+                                "&userID=" + userID;    	 		
+        	 		$.post("/not-just-another-race-timer/cancel_registration",formAndAuth, function(  data ) {
+        	 		  if(data.affectedRows == 0) alert("Unable to cancel registration.");
+        	 		  else alert("Successfully withdrew registration from event.");
+        	 	      var divContainer = document.getElementById("userTable");
+        			  var tblHTML = tableJSONtoHTML(data);
+        			  addRowHandlers(tblHTML.childNodes[0],promptCancelRegister);
+    
+        			  divContainer.innerHTML = "";
+                      divContainer.appendChild(tblHTML);
+        			});
+        	 	});  	 	
     	 });
+        
+        
+        function promptCancelRegister(cells) {
+            var id = cells[0].innerHTML;
+            var name = cells[1].innerHTML;
+            
+            document.getElementById("cancel_event").value = id; // set form value
+            
+            document.getElementById("cancel_button").value = "Unregister From \"" + name + "\"";
+            
+        }        
         
          </script>
         </div>
