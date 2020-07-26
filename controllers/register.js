@@ -1,29 +1,27 @@
 var Cryptr = require('cryptr');
 var jwt=require('jsonwebtoken'); // client will store a web token for auth
+var fs = require('fs');
 
 cryptr = new Cryptr('dhsf^3##*(YV#Vy8');
  
 module.exports.register=function(req,res,connection){
     var encryptedString = cryptr.encrypt(req.body.password);
-    var users={
-        "name":req.body.name,
-        "email":req.body.email,
-        "password":encryptedString
-    };
-    connection.query('INSERT INTO Users SET ?',users, function (error, results, fields) {
+
+    connection.query('INSERT INTO Users(name,email,password) VALUES (?,?,?)',[req.body.name,req.body.email,encryptedString], function (error, results, fields) {
       if (error) {
         res.json({
             status:false,
             message:'there are some errors with the insertion query'+error
         });
       }else{
-          var token=jwt.sign(users.email,users.password);
+          let privateKey = fs.readFileSync('./privateKey.pem','utf-8');
+          var token=jwt.sign(req.body.email,privateKey, { algorithm: 'HS256'});
           res.json({
             status:true,
-            data:results,
             message:'user registered sucessfully!',
+            userID: parseInt(results.insertId),
             token:token
-        });
+          });
       }
     });
 };

@@ -1,75 +1,118 @@
 <!doctype html>
 <html lang="en">
 <head>
-    
-    <style>
-    table, th, td {
-      border: 1px solid black;
-      border-collapse: collapse;
-    }
-    </style>
-	<meta charset="UTF-8">
-	<title>nJA Race Timer</title>
+    <title>nJA Race Timer</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
 	<link rel="shortcut icon" href="/not-just-another-race-timer/favicon.ico" type="image/x-icon" />
 	<script src= 
 "/not-just-another-race-timer/utility/utility.js"> 
     </script> 
-	<script src= 
-"https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"> 
-    </script> 
-    <link href="/not-just-another-race-timer/css/form.css" rel="stylesheet" type="text/css">	
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <style>
+    /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
+    .row.content {height: 550px}
+
+    /* Set gray background color and 100% height */
+    .sidenav {
+      background-color: #f1f1f1;
+      height: 100%;
+    }
+
+    /* On small screens, set height to 'auto' for the grid */
+    @media screen and (max-width: 767px) {
+      .row.content {height: auto;}
+    }
+  </style>	
 </head>
 
 
 <body>
-    <a href="/not-just-another-race-timer/login"> Login </a>
-    <br>
+
+
+    <nav class="navbar navbar-inverse visible-xs">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/not-just-another-race-timer/favicon.ico">nJA Race Timer</a>
+        </div>
+        <div class="collapse navbar-collapse" id="myNavbar">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="/not-just-another-race-timer/login">Login</a></li>
+            <li><a href="/not-just-another-race-timer/register">Register</a></li>
+            <li><a href="/not-just-another-race-timer/event_manager">Create Event</a></li>
+            <li><a href="/not-just-another-race-timer/participate">Participate Event</a></li>
+            <li><a href="/not-just-another-race-timer/create_team">Create Team</a></li>
+            <li><a href="/not-just-another-race-timer/join_team">Join Team</a></li>
+            <li><a href="/not-just-another-race-timer/rankings">Rankings</a></li>
     
-    <a href="/not-just-another-race-timer/register"> Register </a>
-    <br>
+          </ul>
+        </div>
+      </div>
+    </nav>
     
-    <a href="/not-just-another-race-timer/event_manager"> Create an Event </a>
-    <br>
     
-    <a href="/not-just-another-race-timer/participate"> Participate in an Event </a>
-    <br>
     
-    <a href="/not-just-another-race-timer/event_manager"> Create an Event </a>
-    <br>
-    <br>
-    
-    <form id="find_athletes" method="post" action="/">
-	    <input type="text" name="athleteName" placeholder="Filter Athletes by Name"><br>
-	    <input type="text" name="eventName" placeholder="Event Keyword"><br>
-	    <!-- <input type="number" name="age" placeholder="Age"><br> -->
-	    <input type="submit" value="Find Registered Athletes">
-	</form>
-	
-	<!-- This table displays the query results -->
-	<div class="container-fluid" id = "userTable">
+
+<div class="container-fluid">
+  <div class="row content">
+    <div class="col-sm-3 sidenav hidden-xs">
+      <h2>nJA Race Timer</h2>
+      <ul class="nav nav-pills nav-stacked">
+        <li class="active"><a href="/not-just-another-race-timer/login">Login</a></li>
+        <li><a href="/not-just-another-race-timer/register">Register</a></li>
+        <li><a href="/not-just-another-race-timer/event_manager">Create Event</a></li>
+        <li><a href="/not-just-another-race-timer/participate">Participate Event</a></li>
+        <li><a href="/not-just-another-race-timer/create_team">Create Team</a></li>
+        <li><a href="/not-just-another-race-timer/join_team">Join Team</a></li>
+        <li><a href="/not-just-another-race-timer/rankings">Rankings</a></li>
+      </ul><br>
     </div>
+    <br>
 
-	 <script>
-	 
-	 
-	 $(document).ready(function  () {
-	 	$("#find_athletes").on("submit",function  (e) {
-	 		e.preventDefault();
-	 		console.log("Finding athletes...");
-	 		$.post("/not-just-another-race-timer",$(this).serialize(), function(  data ) {
-	 	      var divContainer = document.getElementById("userTable");
-			  var tblHTML = tableJSONtoHTML(data);
-			  divContainer.innerHTML = "";
-              divContainer.appendChild(tblHTML);
-			});
-	 	})
-	 });
-	 
-	 
+    <div class="col-sm-9">
+      <div class="well">
+        <h4>Find Athletes</h4><br>
+        
+        <form id="find_athletes" method="post" action="/">
+    	    <input type="text" name="athleteName" placeholder="Filter Athletes by Name"><br>
+    	    <input type="text" name="eventName" placeholder="Event Keyword"><br>
+    	    <!-- <input type="number" name="age" placeholder="Age"><br> -->
+    	    <input type="submit" value="Find Registered Athletes">
+    	</form>
+    	
+        <!-- This table displays the query results -->
+        <div class="container-fluid" id = "userTable">
+        <script>
 
-     
-	 
-	 
- 	</script>
+    
+    	 $(document).ready(function  () {
+    	 	$("#find_athletes").on("submit",function  (e) {
+    	 		e.preventDefault();
+    	 		console.log("Finding athletes...");
+    	 		$.post("/not-just-another-race-timer",$(this).serialize(), function(  data ) {
+    	 	      var divContainer = document.getElementById("userTable");
+    			  var tblHTML = tableJSONtoHTML(data);
+    			  divContainer.innerHTML = "";
+                  divContainer.appendChild(tblHTML);
+    			});
+    	 	})
+    	 });
+        
+         </script>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+
 </body>
 </html>

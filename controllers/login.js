@@ -10,7 +10,7 @@ module.exports.login=function(req,res,connection){
    
    
     connection.query('SELECT * FROM Users WHERE email = ?',[email], function (error, results, fields) {
-        if (error) {
+      if (error) {
           res.json({
             status:false,
             message:'there are some errors with the login query: ' + error

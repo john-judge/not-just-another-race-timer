@@ -1,103 +1,155 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
+  <title>nJART Create Event</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="shortcut icon" href="/not-just-another-race-timer/favicon.ico" type="image/x-icon" />
+  <script src= 
+    "/not-just-another-race-timer/utility/utility.js"> 
+  </script>   
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <style>
+    /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
+    .row.content {height: 550px}
 
-	<meta charset="UTF-8">
-	<title>Event Manager</title>
-	<link rel="shortcut icon" href="/not-just-another-race-timer/favicon.ico" type="image/x-icon" />
-	<script src= 
-"/not-just-another-race-timer/utility/utility.js"> 
-    </script> 
-	<script src= 
-"https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"> 
-    </script> 
-    <link href="/not-just-another-race-timer/css/form.css" rel="stylesheet" type="text/css">	
+    /* Set gray background color and 100% height */
+    .sidenav {
+      background-color: #f1f1f1;
+      height: 100%;
+    }
+
+    /* On small screens, set height to 'auto' for the grid */
+    @media screen and (max-width: 767px) {
+      .row.content {height: auto;}
+    }
+  </style>
 </head>
- 
-
-
 <body>
-    
-    <a href="/not-just-another-race-timer/"> Home </a>
+
+<nav class="navbar navbar-inverse visible-xs">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/not-just-another-race-timer/favicon.ico">nJA Race Timer</a>
+    </div>
+    <div class="collapse navbar-collapse" id="myNavbar">
+      <ul class="nav navbar-nav">
+        <li><a href="/not-just-another-race-timer/login">Login</a></li>
+        <li><a href="/not-just-another-race-timer/register">Register</a></li>
+        <li class="active"><a href="/not-just-another-race-timer/event_manager">Create Event</a></li>
+        <li><a href="/not-just-another-race-timer/participate">Participate In Event</a></li>
+        <li><a href="/not-just-another-race-timer/create_team">Create Team</a></li>
+        <li><a href="/not-just-another-race-timer/join_team">Join Team</a></li>
+        <li><a href="/not-just-another-race-timer/rankings">Rankings</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid">
+  <div class="row content">
+    <div class="col-sm-3 sidenav hidden-xs">
+      <h2>nJA Race Timer</h2>
+      <ul class="nav nav-pills nav-stacked">
+        <li><a href="/not-just-another-race-timer/login">Login</a></li>
+        <li><a href="/not-just-another-race-timer/register">Register</a></li>
+        <li class="active"><a href="/not-just-another-race-timer/event_manager">Create Event</a></li>
+        <li><a href="/not-just-another-race-timer/participate">Participate In Event</a></li>
+        <li><a href="/not-just-another-race-timer/create_team">Create Team</a></li>
+        <li><a href="/not-just-another-race-timer/join_team">Join Team</a></li>
+        <li><a href="/not-just-another-race-timer/rankings">Rankings</a></li>
+      </ul><br>
+    </div>
     <br>
-    <br>
-        
-    
-    <!-- Button to create new event. Inserts into Event table and Manages -->
+
+    <div class="col-sm-9">
+      <div class="well">
+        <h4>Create New Event</h4><br>
+        <!-- Button to create new event. Inserts into Event table and Manages -->
     <form id="create_new_event" method="post" action="/">
-	    <input type="text" name="eventName" placeholder="New Event Name"><br>
-	    <input type="submit" value="Create New Event">
-	</form>
-    
+        New Event Name: <input type="text" name="eventName"><br><br>
+
+        <input type="submit" value="Create New Event">
+    </form>
+
     <!-- Query all events managed by the logged-in user -->
     <form id="refresh_my_events" method="post" action="/">
-	    <input type="submit" value="Refresh My Events">
-	</form>
-	
-	<!-- This table displays the query results -->
-	<div class="container-fluid" id = "eventTable">
-    </div>
-    
-	<!-- This container is the GUI to edit the event -->
-	<div class="container-fluid" id = "eventEditor">
+        <input type="submit" value="Refresh My Events">
+    </form>
+
+    <!-- This table displays the query results -->
+    <div class="container-fluid" id = "eventTable">
     </div>
 
-	 <script>
-	 
-	 
-	 $(document).ready(function  () {
-	 	$("#create_new_event").on("submit",function  (e) {
-	 		e.preventDefault();
+    <!-- This container is the GUI to edit the event -->
+    <div class="container-fluid" id = "eventEditor">
+    </div>
 
-	 		var formAndAuth = $(this).serialize() + 
-	 		            "&token=" + localStorage.getItem('token') +
-	 		            "&userID=" + localStorage.getItem('userID');
-	 		
-	 		$.post("/not-just-another-race-timer/event_manager",formAndAuth, function(  data ) {
-			  var divContainer = document.getElementById("eventTable");
-			  var tblHTML = tableJSONtoHTML(data);
-			  divContainer.innerHTML = "";
+     <script>
+
+
+     $(document).ready(function  () {
+        $("#create_new_event").on("submit",function  (e) {
+            e.preventDefault();
+
+            var formAndAuth = $(this).serialize() +
+                        "&token=" + localStorage.getItem('token') +
+                        "&userID=" + localStorage.getItem('userID');
+
+            $.post("/not-just-another-race-timer/event_manager",formAndAuth, function(  data ) {
+              var divContainer = document.getElementById("eventTable");
+              var tblHTML = tableJSONtoHTML(data);
+              divContainer.innerHTML = "";
               divContainer.appendChild(tblHTML);
-              
+
               /* TO DO: Add button column to table to open event editor  */
               //var eventID = ...
-              //openEventEditor(eventID); // generate event editor on this page 
+              //openEventEditor(eventID); // generate event editor on this page
 
-			});
-	 	})
-	 	
-	 	$("#refresh_my_events").on("submit",function  (e) {
-	 		e.preventDefault();
+            });
+        })
 
-	 		var formAndAuth = $(this).serialize() + 
-	 		            "&token=" + localStorage.getItem('token') +
-	 		            "&userID=" + localStorage.getItem('userID');
-	 		
-	 		$.post("/not-just-another-race-timer/event_manager",formAndAuth, function(  data ) {
-			  var divContainer = document.getElementById("eventTable");
-			  var tblHTML = tableJSONtoHTML(data);
-			  divContainer.innerHTML = "";
+        $("#refresh_my_events").on("submit",function  (e) {
+            e.preventDefault();
+
+            var formAndAuth = $(this).serialize() +
+                        "&token=" + localStorage.getItem('token') +
+                        "&userID=" + localStorage.getItem('userID');
+
+            $.post("/not-just-another-race-timer/event_manager",formAndAuth, function(  data ) {
+              var divContainer = document.getElementById("eventTable");
+              var tblHTML = tableJSONtoHTML(data);
+              divContainer.innerHTML = "";
               divContainer.appendChild(tblHTML);
-              
+
               /* TO DO: Add button column to table to open event editor  */
               //var eventID = ...
-              //openEventEditor(eventID); // generate event editor on this page 
+              //openEventEditor(eventID); // generate event editor on this page
 
-			});
-	 	})
-	 });
-	 
-	 
+            });
+        })
+     });
+
+
     function openEventEditor(eventID) {
     // Triggered by button in eventTable.
-                  
-                  // Button to launch 
+
+                  // Button to launch
     }
-	 
- 	</script>
-	 
-	 
+
+    </script>
+        </div>
+      </div>
+      </div>
+    </div>
+
 
 </body>
- 
-</html>  
+</html>
