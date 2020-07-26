@@ -4,6 +4,9 @@
   <title>nJART Join Team</title>
   <meta charset="utf-8">
   <link rel="shortcut icon" href="/not-just-another-race-timer/favicon.ico" type="image/x-icon" />
+  <script src= 
+"/not-just-another-race-timer/utility/utility.js"> 
+  </script>     
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -18,6 +21,14 @@
       background-color: #f1f1f1;
       height: 100%;
     }
+    
+    td {border: 1px #DDD solid; padding: 5px; cursor: pointer;}
+    
+    /* Display of table row when selected */
+    .selected {
+        background-color: #A4D0EE; 
+        color: #FFF;
+    }     
 
     /* On small screens, set height to 'auto' for the grid */
     @media screen and (max-width: 767px) {
@@ -72,28 +83,89 @@
     <div class="col-sm-9">
       <div class="well">
         <h4>Join Team</h4><br>
+        <p>Joining a team will remove you from previous teams and disband any teams you've created.</p>
 
-
-    <form id="create_team" method="post" action="/">
-        Search: <input type="text" name="teamName" placeholder="Team Name"><br><br>
-        <input type="submit" value="Search Team">
+    <form id="get_teams" method="post" action="/">
+        Search Teams: <input type="text" name="teamName"><br><br>
+        <input type="submit" value="Show Teams">
     </form>
+    <br><br>
+    
+    <form id="join_team" method="post" action="/">
+        <input id="selectedTeamID" type="hidden" name="teamID">
+        <input id="selectedTeamName" type="submit" value="Join Team">
+    </form>    
 
 
-    <div class="container-fluid" id = "querySummary">
+    <!-- This container shows all team members -->
+    <div class="container-fluid" id = "teamInfo">
+    </div>    
+    <div class="container-fluid" id = "teamTable">
     </div>
-    <!-- This table displays the query results -->
-    <div class="container-fluid" id = "eventTable">
-    </div>
 
+     <script>
+
+     $(document).ready(function  () {
+         
+        $("#join_team").on("submit",function  (e) {
+            e.preventDefault();
+
+            var formAndAuth = $(this).serialize() +
+                        "&token=" + localStorage.getItem('token') +
+                        "&userID=" + localStorage.getItem('userID');
+
+            $.post("/not-just-another-race-timer/join_team",formAndAuth, function(  data ) {
+              if(data.affectedRows > 0) alert("Successfully joined team.");
+              else alert("Failed to join team.");
+            });
+        });
+
+        $("#get_teams").on("submit",function  (e) {
+            e.preventDefault();
+
+            var formAndAuth = $(this).serialize() +
+                        "&token=" + localStorage.getItem('token') +
+                        "&userID=" + localStorage.getItem('userID');
+
+            $.post("/not-just-another-race-timer/get_teams",formAndAuth, function(  data ) {
+              var teamInfoContainer = document.getElementById("teamInfo");
+              
+              if(data.length < 1) 
+                  teamInfoContainer.innerHTML = "You aren't part of a team. Create or Join a team.";
+              else {
+                  
+                  var divContainer = document.getElementById("teamTable");
+                  var tblHTML = tableJSONtoHTML(data);
+    
+                  addRowHandlers(tblHTML.childNodes[0],populateSelectedTeam);
+    
+                  divContainer.innerHTML = "";
+                  divContainer.appendChild(tblHTML);
+              }
+            });
+        });
+     });
+
+    function populateSelectedTeam(cells) {
+        var id = cells[0].innerHTML;
+        var name = cells[1].innerHTML;
+        console.log(id + " " + name);
+        
+        document.getElementById("selectedTeamID").value = id; // set form value
+        
+        document.getElementById("selectedTeamName").value = "Join Team \"" + name + "\"";
+        
+    }
+     
+     
+    </script>
 
 
     </div>
       </div>
       </div>
     </div>
-  </div>
-</div>
+
 
 </body>
 </html>

@@ -205,7 +205,6 @@ app.post("/not-just-another-race-timer/event_manager",isAuthenticated, function 
         console.log('connected as id ' + connection.threadId);
   
         if(req.body.eventName) { // insert new event
-            var newEventID;
             connection.query('INSERT INTO Events(eventName) VALUES(?)',[req.body.eventName], (err, result, fields) => {
                 if(err) throw err;
                 connection.query('INSERT INTO Manages(userID,eventID) VALUES(?,?)',[req.body.userID,parseInt(result.insertId)], (err, result, fields) => {
@@ -239,22 +238,33 @@ app.post("/not-just-another-race-timer/create_team",isAuthenticated, function  (
         if(err) throw err;
         console.log('connected as id ' + connection.threadId);
   
-        if(req.body.eventName) { // insert new event
-            var newEventID;
-            connection.query('INSERT INTO Teams(teamName,teamCaptain) VALUES(?,?)',[req.body.eventName,req.body.userID], (err, result, fields) => {
-                if(err) throw err;
-            });
-        }
-        connection.query('SELECT teamName AS Team FROM Teams WHERE teamCaptain = ?',[req.body.userID], (err, rows) => {
+        connection.query('INSERT INTO Teams(teamName,teamCaptain) VALUES(?,?)',[req.body.teamName,req.body.userID], (err, result, fields) => {
             if(err) throw err;
-            connection.release(); // return the connection to pool
+            connection.release();
+            console.log("New teamID: " + result.insertId);
+            /* MySQL trigger will update User to have team ID */
+            resp.json(result);
+        });
+        
+    });
+});
+
+/* Get all members of a team to which the logged in user belongs */
+app.post("/not-just-another-race-timer/get_team",isAuthenticated, function  (req,resp) {
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        console.log('connected as id ' + connection.threadId);
+  
+        connection.query('SELECT name AS Member, teamName as Team FROM Users NATURAL JOIN Teams WHERE teamID = (SELECT teamID from Users WHERE userID = ?)',[req.body.userID], (err, rows) => {
+            if(err) throw err;
+            connection.release(); 
             resp.json(rows);
         });
     });
 });
 
 
-/* Find and join a team */
+/* Page to find and join a team */
 app.get("/not-just-another-race-timer/join_team", function  (req,resp) {
     pool.getConnection((err, connection) => {
         if(err) throw err;
@@ -264,13 +274,28 @@ app.get("/not-just-another-race-timer/join_team", function  (req,resp) {
     });
 });
 
-/* Find and join a team */
-app.post("/not-just-another-race-timer/join_team",isAuthenticated, function  (req,resp) {
+/* Find teams */
+app.post("/not-just-another-race-timer/get_teams",isAuthenticated, function  (req,resp) {
     pool.getConnection((err, connection) => {
         if(err) throw err;
         console.log('connected as id ' + connection.threadId);
         var queryArg = "%" + req.body.teamName + "%";
-        connection.query('SELECT t.teamName AS Team,u.name AS Captain FROM Teams t LEFT JOIN Users u ON u.userID = t.teamCaptain WHERE teamName LIKE ?',[queryArg], (err, rows) => {
+        connection.query('SELECT x.TeamID,x.Team,u2.name AS Captain,x.Members FROM (SELECT t.teamID AS TeamID, t.teamName AS Team,t.teamCaptain, COUNT(*) AS Members FROM Users u NATURAL JOIN Teams t WHERE t.teamName LIKE ? GROUP BY t.teamID) x LEFT JOIN Users u2 ON x.teamCaptain = u2.name',[queryArg], (err, rows) => {
+            // call back function
+            if(err) throw err;
+            connection.release(); // return the connection to pool
+            resp.json(rows);
+        });
+    });
+});
+
+/* Join a team */
+app.post("/not-just-another-race-timer/join_team",isAuthenticated, function  (req,resp) {
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        console.log('connected as id ' + connection.threadId);
+
+        connection.query('UPDATE Users SET teamID = ? WHERE userID = ?',[req.body.teamID,req.body.userID], (err, rows) => {
             // call back function
             if(err) throw err;
             connection.release(); // return the connection to pool

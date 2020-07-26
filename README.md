@@ -15,7 +15,7 @@ Rankings
 
 Update from Event (change name) (event manager)
 Unregister from ParticipatesIn
-
+Group Rankings by Team
 
 While building course waypoints, reject if the next point is within 100 m of other course points.
 Find nearest segment between two waypoints
