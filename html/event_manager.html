@@ -20,6 +20,14 @@
       background-color: #f1f1f1;
       height: 100%;
     }
+    
+    td {border: 1px #DDD solid; padding: 5px; cursor: pointer;}
+    
+    /* Display of table row when selected */
+    .selected {
+        background-color: #A4D0EE; 
+        color: #FFF;
+    }
 
     /* On small screens, set height to 'auto' for the grid */
     @media screen and (max-width: 767px) {
@@ -94,7 +102,6 @@
 
      <script>
 
-
      $(document).ready(function  () {
         $("#create_new_event").on("submit",function  (e) {
             e.preventDefault();
@@ -108,13 +115,8 @@
               var tblHTML = tableJSONtoHTML(data);
               divContainer.innerHTML = "";
               divContainer.appendChild(tblHTML);
-
-              /* TO DO: Add button column to table to open event editor  */
-              //var eventID = ...
-              //openEventEditor(eventID); // generate event editor on this page
-
             });
-        })
+        });
 
         $("#refresh_my_events").on("submit",function  (e) {
             e.preventDefault();
@@ -126,25 +128,40 @@
             $.post("/not-just-another-race-timer/event_manager",formAndAuth, function(  data ) {
               var divContainer = document.getElementById("eventTable");
               var tblHTML = tableJSONtoHTML(data);
+
+              addRowHandlers(tblHTML.childNodes[0],openEventEditor);
+
               divContainer.innerHTML = "";
               divContainer.appendChild(tblHTML);
-
-              /* TO DO: Add button column to table to open event editor  */
-              //var eventID = ...
-              //openEventEditor(eventID); // generate event editor on this page
-
             });
-        })
+        });
      });
+     
 
+    /* Triggered by button in eventTable. Shows in eventEditor */
+    function openEventEditor(cells) {
+        var id = cells[0].innerHTML;
+        var name = cells[1].innerHTML;
+        console.log(id + " " + name);
+        var divContainer = document.getElementById("eventEditor");
+    
 
-    function openEventEditor(eventID) {
-    // Triggered by button in eventTable.
-
-                  // Button to launch
+    // Button to start the event timer
+    
+    
+    // Button to finish the event
+    
+    
+    // Edit the course map
+    
+    
+    
+    
     }
 
     </script>
+    
+    
         </div>
       </div>
       </div>

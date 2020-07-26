@@ -144,17 +144,32 @@ app.get("/not-just-another-race-timer/participate", function  (req,resp) {
     });
 });
 
-/* Find and participate in event */
+/* Find events to participate in */
 app.post("/not-just-another-race-timer/participate",isAuthenticated, function  (req,resp) {
     pool.getConnection((err, connection) => {
         if(err) throw err;
         console.log('connected as id ' + connection.threadId);
         var queryArg = "%" + req.body.eventName + "%";
-        connection.query('SELECT eventName AS Event,distance AS Distance FROM Events WHERE eventName LIKE ?',[queryArg], (err, rows) => {
+        connection.query('SELECT eventID AS EventID, eventName AS Event,distance AS Distance FROM Events WHERE eventName LIKE ?',[queryArg], (err, rows) => {
             // call back function
             if(err) throw err;
             connection.release(); // return the connection to pool
             resp.json(rows);
+        });
+    });
+});
+
+/* participate in event */
+app.post("/not-just-another-race-timer/participate_insert",isAuthenticated, function  (req,resp) {
+    pool.getConnection((err, connection) => {
+        if(err) throw err;
+        console.log('connected as id ' + connection.threadId);
+        console.log("userID: " + req.body.userID + "  eventID: " + req.body.eventID);
+        connection.query('INSERT INTO ParticipatesIn(userID,eventID) VALUES(?,?)',[req.body.userID,req.body.eventID], (err, result, fields) => {
+            if(err) throw err;
+            connection.release(); 
+            
+            console.log(result);
         });
     });
 });
@@ -173,6 +188,7 @@ app.get("/not-just-another-race-timer/event_manager", function  (req,resp) {
 app.post("/not-just-another-race-timer/event_manager",isAuthenticated, function  (req,resp) {
     pool.getConnection((err, connection) => {
         if(err) throw err;
+        if(!req.body.userID) return;
         console.log('connected as id ' + connection.threadId);
   
         if(req.body.eventName) { // insert new event
@@ -185,7 +201,7 @@ app.post("/not-just-another-race-timer/event_manager",isAuthenticated, function 
                 });
             });
         }
-        connection.query('SELECT eventName As Event,distance AS Distance,startTime AS Started FROM Events NATURAL JOIN Manages WHERE userID = ?',[req.body.userID], (err, rows) => {
+        connection.query('SELECT eventID as EventID, eventName As Event,distance AS Distance,startTime AS Started FROM Events NATURAL JOIN Manages WHERE userID = ?',[req.body.userID], (err, rows) => {
             if(err) throw err;
             connection.release(); // return the connection to pool
             resp.json(rows);

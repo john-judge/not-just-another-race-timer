@@ -23,6 +23,14 @@
       height: 100%;
     }
 
+    td {border: 1px #DDD solid; padding: 5px; cursor: pointer;}
+    
+    /* Display of table row when selected */
+    .selected {
+        background-color: #A4D0EE; 
+        color: #FFF;
+    }    
+
     /* On small screens, set height to 'auto' for the grid */
     @media screen and (max-width: 767px) {
       .row.content {height: auto;}
@@ -73,13 +81,19 @@
 
     <div class="col-sm-9">
       <div class="well">
-        <h4>Participate Event</h4><br>
+        <h4>Participate In Event</h4><br>
         <!-- Button to create new event. Inserts into Event table and Manages -->
     <form id="find_events" method="post" action="/">
-        Search Event: <input type="text" id="queryEventName" name="eventName" placeholder="Keyword"><br><br>
-        <input type="submit" value="Submit">
+        Find Events: <input type="text" id="queryEventName" name="eventName" placeholder="Keyword"><br><br>
+        <input type="submit" value="Search">
     </form>
+    <br><br><br>
 
+    <!-- button to Sign up -->
+    <form id="participate_in_event" method="post" action="/">
+        Event ID: <input type="text" id="targetEventID" name="eventID" placeholder="Select an event..."><br><br>
+        <input id="participate_button" type="submit" value="Sign up for...">
+    </form>
 
     <div class="container-fluid" id = "querySummary">
     </div>
@@ -104,6 +118,7 @@
             $.post("/not-just-another-race-timer/participate",formAndAuth, function(  data ) {
               var divContainer = document.getElementById("eventTable");
               var tblHTML = tableJSONtoHTML(data);
+              addRowHandlers(tblHTML.childNodes[0],participateInEvent);
               divContainer.innerHTML = "";
               divContainer.appendChild(tblHTML);
 
@@ -116,9 +131,38 @@
 
             });
         })
+        
+        $("#participate_in_event").on("submit",function  (e) {
+            e.preventDefault();
+            let token = localStorage.getItem('token');
+            let userID = localStorage.getItem('userID');
+            //$(this).userID = userID;
+            //$(this).token = token;
+            var queryEventName = document.getElementById("queryEventName").value;
+            var formAndAuth = $(this).serialize() +
+                        "&token=" + token +
+                        "&userID=" + userID;
+            $.post("/not-just-another-race-timer/participate_insert",formAndAuth, function(  data ) {
+
+            });
+        })        
+        
      });
 
 
+
+
+
+    function participateInEvent(cells) {
+        var id = cells[0].innerHTML;
+        var name = cells[1].innerHTML;
+        console.log(id + " " + name);
+        
+        document.getElementById("targetEventID").value = id; // set form value
+        
+        document.getElementById("participate_button").value = "Sign up for \"" + name + "\"";
+        
+    }
 
     </script>
         </div>
