@@ -5,6 +5,30 @@
   [Requirements](https://wiki.illinois.edu/wiki/display/CS411SU20/Project+Track+1)
   
   [Workflow Wireframe / Outline (In Progress)](https://www.overleaf.com/7284889269njzvssfcnrqq)
+  
+ ## Meeting 7/25
+ 
+For the Demo:
+Create a Team
+Join a Team
+Rankings
+
+Update from Event (change name) (event manager)
+Unregister from ParticipatesIn
+
+
+While building course waypoints, reject if the next point is within 100 m of other course points.
+Find nearest segment between two waypoints
+   If there are two nearest segments within threshold (100 m) reject
+Compute normal to segment
+Store currentDistance progress for the participant, and store rank
+
+Finish conditions ( when to record finishTime):
+  1) Spectated insertion within 100 m of final course waypoint.
+  2) From event_manager, the manager clicks "Event is Finished"
+        This sets the "isFinished" flag in Events, which finalizes results:
+                  Spectated cannot be updated for this eventID
+                  Triggers all extrapolations on finishTime for users who have at least 2/3 of the race finished.
 
 # cPanel Instructions for collaborators
 
