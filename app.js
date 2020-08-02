@@ -1,9 +1,17 @@
 let express = require("express");
 let mysql = require('mysql');
 let fs = require('fs');
+var https = require('https');
 let port = 50000;
 var bodyParser = require('body-parser');
 var jwt=require('jsonwebtoken'); // client will store a web token for auth
+
+/*
+var options = {
+  key: fs.readFileSync('./privateKey.pem', 'utf8'),
+  cert: fs.readFileSync('./cert.pem', 'utf8')
+};
+*/
 
 const app = express();
 
@@ -334,7 +342,6 @@ app.post("/not-just-another-race-timer/rankings",(req,resp) => {
     });
 });
 
-
 /* Start an event (sets startTime to now) */
 app.post("/not-just-another-race-timer/start_event_timer",isAuthenticated, function  (req,resp) {
     pool.getConnection((err, connection) => {
@@ -353,7 +360,6 @@ app.post("/not-just-another-race-timer/start_event_timer",isAuthenticated, funct
     });
 });
 
-
 /* End an event and trigger result finalizing (sets isFinished flag to true) */
 app.post("/not-just-another-race-timer/end_event_timer",isAuthenticated, function  (req,resp) {
     pool.getConnection((err, connection) => {
@@ -369,11 +375,27 @@ app.post("/not-just-another-race-timer/end_event_timer",isAuthenticated, functio
     });
 });
 
+/* Get all waypoints of map for an event's course */
+app.post("/not-just-another-race-timer/show_course_map",isAuthenticated, function  (req,resp) {
+    pool.getConnection((err, connection) => {
+        if(err) { console.log(err); connection.release(); return; }
+        console.log('connected to get course map for event ' + req.body.eventID + ' as id ' + connection.threadId);
+
+        connection.query('SELECT * FROM CourseWaypoints WHERE eventID = ? ORDER BY distance',[req.body.eventID], (err, rows) => {
+            console.log(rows);
+            if(err) { console.log(err); connection.release(); return; }
+            connection.release(); // return the connection to pool
+            resp.json(rows);
+        });
+    });
+});
+
 
 app.listen(port, () => {
     console.log('Server is running at port ' + port);
 });
 
+// Create an HTTPS service identical to the HTTP service.  https.createServer(options, app).listen(port);
 
 
 
