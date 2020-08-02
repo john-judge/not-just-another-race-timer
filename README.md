@@ -51,7 +51,7 @@ The web server is set up with **node.js**. To run the server script from the Ter
 `
   node app.js
 `
-To run it indefinitely:
+To run it headless and (ideally) indefinitely:
 
 `
 nohup node app.js > output.log &
@@ -61,12 +61,11 @@ nohup node app.js > output.log &
 `
 pgrep -l "node"
 `
-Due to npm install package, changes to `app.js` will get carried into the web server automatically.
+You may need to restart the web server for changes in `node.js` to be tested.
 If we find problems with the web server stopping, we may need to set up a Cron Job in cPanel.
 
 # Client-Side Scripting
-Will be done in Javascript.
-So far we only serve `home.html`.
+Javascript, HTML, CSS, jQuery.
 
 To debug the client-side JS code, view the Console and debug Sources from **Chrome > CTRL + SHIFT + I**.
 
@@ -76,7 +75,7 @@ To have HTML changes be reflected in the web app (http://jmjudge2.web.illinois.e
 
 We will be using [Google Maps Browser HTML5 Geolocation library](https://developers.google.com/maps/documentation/javascript/examples/map-geolocation).
 
-Browser will also be capturing time stamps.
+Web server will also be capturing time stamps in response to jQuery requests.
 
 # Database Structure 
 
