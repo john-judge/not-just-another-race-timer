@@ -126,17 +126,23 @@
     <!-- This container is the GUI to edit the event -->
     <div class="container-fluid" id = "eventEditor" style="display: none" >
         <form id="start_event_timer" method="post" action="/">
-            <input type="hidden" id="eventID_to_start" name="eventID"><br><br>
+            <input type="hidden" id="eventID_to_start" name="eventID">
             <input type="submit" value="Start Timer"> Let the event begin!
-        </form>
+        </form><br>
         <form id="end_event_timer" method="post" action="/">
-            <input type="hidden" id="eventID_to_end" name="eventID"><br><br>
+            <input type="hidden" id="eventID_to_end" name="eventID">
             <input type="submit" value="End Event Timer"> Finalizes results. 
-        </form>
+        </form><br>
         <form id="show_course_map" method="post" action="/">
-            <input type="hidden" id="eventID_map" name="eventID"><br><br>
+            <input type="hidden" id="eventID_map" name="eventID">
             <input type="submit" value="Show Course Map" id = "loadMapText">
-        </form>        
+        </form>       
+        <form id="add_waypoint" method="post" action="/">
+            <input type="hidden" id="eventID_add_point" name="eventID">
+            <input type="hidden" id="xCurrLoc" name="xLocation">
+            <input type="hidden" id="yCurrLoc" name="yLocation">
+            <input type="submit" value="Add Current Location to Course Map" id = "loadMapText">
+        </form>           
     </div>
     <br>
     
@@ -212,8 +218,21 @@
                 
               document.getElementById("map").style.display = "block";
               initMap(data);
+              document.getElementById("loadMapText").value = "Refresh Map";
             });
-        });           
+        });    
+        
+        $("#add_waypoint").on("submit",function  (e) {
+            e.preventDefault();
+            getUserGeolocation(); //refresh curr location
+            var formAndAuth = $(this).serialize() + // includes eventID
+                        "&token=" + localStorage.getItem('token') +
+                        "&userID=" + localStorage.getItem('userID');
+            $.post("/not-just-another-race-timer/add_waypoint",formAndAuth, function(  data ) {
+                if(data.affectedRows > 0) alert("Successfully added waypoint to course map.");
+                else alert("Failed to add waypoint to map. Waypoints cannot be within 100m of other waypoints.")
+            });
+        });     
      });
 
     /* Triggered by button in eventTable. Shows in eventEditor */
@@ -225,16 +244,15 @@
         // show the editor div element
         evtEditDiv.style.display = "block";
         
-        //set form values for button to start the event timer
+        //set form values to eventID for buttons
         document.getElementById("eventID_to_start").value = id; 
-        
-        //set form values for button to end the event
         document.getElementById("eventID_to_end").value = id; 
-        
-        document.getElementById("eventID_map").value = id; 
+        document.getElementById("eventID_map").value = id;
+        document.getElementById("eventID_add_point").value = id; 
     
         // Hide course map
         document.getElementById("map").style.display = "none";
+        document.getElementById("loadMapText").value = "Show Course Map";
     }
     
     /* show map data, where DATA is response to show_course_map POST */
@@ -269,8 +287,11 @@
                         lat: position.coords.latitude,
                         lng: position.coords.longitude
                     };
+                    document.getElementById("xCurrLoc").value = pos.lat;
+                    document.getElementById("yCurrLoc").value = pos.lng;
+                    
                     infoWindow.setPosition(pos);
-                    infoWindow.setContent("Location found.");
+                    infoWindow.setContent("Your location");
                     infoWindow.open(map);
                     map.setCenter(pos);
                 },

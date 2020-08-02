@@ -390,13 +390,25 @@ app.post("/not-just-another-race-timer/show_course_map",isAuthenticated, functio
     });
 });
 
+/* Get all waypoints of map for an event's course */
+app.post("/not-just-another-race-timer/add_waypoint",isAuthenticated, function  (req,resp) {
+    pool.getConnection((err, connection) => {
+        if(err) { console.log(err); connection.release(); return; }
+        console.log('connected to insert point to course map for event ' + req.body.eventID + ' as id ' + connection.threadId);
+
+        connection.query('INSERT INTO CourseWaypoints(eventID,xLocation,yLocation) VALUES(?,?,?)',[req.body.eventID,req.body.xLocation,req.body.yLocation], (err, rows) => {
+            console.log(rows);
+            if(err) { console.log(err); }
+            connection.release(); // return the connection to pool
+            resp.json(rows);
+        });
+    });
+});
+
 
 app.listen(port, () => {
     console.log('Server is running at port ' + port);
 });
-
-// Create an HTTPS service identical to the HTTP service.  https.createServer(options, app).listen(port);
-
 
 
 
