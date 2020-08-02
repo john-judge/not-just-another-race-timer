@@ -69,11 +69,15 @@ Javascript, HTML, CSS, jQuery.
 
 To debug the client-side JS code, view the Console and debug Sources from **Chrome > CTRL + SHIFT + I**.
 
-To have HTML changes be reflected in the web app (http://jmjudge2.web.illinois.edu/not-just-another-race-timer), you may need to restart the app from **cPanel > Software > Setup Node.js App > Restart the Application**
+To have HTML changes be reflected in the web app (https://jmjudge2.web.illinois.edu/not-just-another-race-timer), you may need to restart the app from **cPanel > Software > Setup Node.js App > Restart the Application**
 
 ## Data Collection
 
 We will be using [Google Maps Browser HTML5 Geolocation library](https://developers.google.com/maps/documentation/javascript/examples/map-geolocation).
+
+You must use the https version of the site to allow geolocation services.
+
+We are running on a free version of Google Cloud Services API, and I've put a quota of 903 requests per day to avoid getting charged.
 
 Web server will also be capturing time stamps in response to jQuery requests.
 
