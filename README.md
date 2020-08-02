@@ -6,6 +6,22 @@
   
   [Workflow Wireframe / Outline (In Progress)](https://www.overleaf.com/7284889269njzvssfcnrqq)
   
+  
+ ## Meeting 8/2
+ 
+ Decisions: 
+ Locations will be Cartesian and backend will not perform any unit conversions (whatever units we put in should be the units we get out). Web server will use GMaps project libraries to handle this.
+ We probably don't need Stored Procedures. John can test all single-expression queries from the web server. Tyler/Cloud will be able to test trigger logic once GUIs are developed.
+
+To do in the next 2-3 days:
+ Allen will throw together an Overleaf doc and then assign each of us some sections to write. [Report requirements](https://wiki.illinois.edu/wiki/display/CS411SU20/Project+Track+1+Grading)
+ Cloud and John will collaborate on the Rankings. Cloud, you can just send me the query when it's ready.
+ Tyler will write trigger for adding course waypoints, including constraints and update point's distance from start and event's total distance
+ Tyler/Cloud to write and test triggers for CourseWaypoint insertions.
+ John to implement GUI, web server routing, and basic queries for Spectated and Rankings, to enable testing of Tyler's triggers.
+ John to research and implement Gmaps' JS API map projection library, so that MySQL can continue to assume Cartesian coordinates.
+ Allen will make the 2-5 min video (Allen, I might send you some fun mobile GUI + scenic / outdoors footage to use -- I live near a farm in Wisconsin :) )
+  
  ## Meeting 7/25
  
 For the Demo:
