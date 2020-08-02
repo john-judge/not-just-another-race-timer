@@ -354,6 +354,22 @@ app.post("/not-just-another-race-timer/start_event_timer",isAuthenticated, funct
 });
 
 
+/* End an event and trigger result finalizing (sets isFinished flag to true) */
+app.post("/not-just-another-race-timer/end_event_timer",isAuthenticated, function  (req,resp) {
+    pool.getConnection((err, connection) => {
+        if(err) { console.log(err); connection.release(); return; }
+        console.log('connected as id ' + connection.threadId);
+
+        connection.query('UPDATE Events SET isFinished = FALSE WHERE eventID = ? AND startTime IS NOT NULL',[req.body.eventID], (err, rows) => {
+            // call back function
+            if(err) { console.log(err); connection.release(); return; }
+            connection.release(); // return the connection to pool
+            resp.json(rows);
+        });
+    });
+});
+
+
 app.listen(port, () => {
     console.log('Server is running at port ' + port);
 });

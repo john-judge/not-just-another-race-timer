@@ -150,27 +150,23 @@
         
         $("#start_event_timer").on("submit",function  (e) {
             e.preventDefault();
-
             var formAndAuth = $(this).serialize() + // includes eventID
                         "&token=" + localStorage.getItem('token') +
                         "&userID=" + localStorage.getItem('userID');
-
             $.post("/not-just-another-race-timer/start_event_timer",formAndAuth, function(  data ) {
-              console.log(data);
-
+              if(data.affectedRows > 0) alert("Successfully started the race!");
+              else alert("Could not start event."); 
             });
         });        
 
         $("#end_event_timer").on("submit",function  (e) {
             e.preventDefault();
-
             var formAndAuth = $(this).serialize() + // includes eventID
                         "&token=" + localStorage.getItem('token') +
                         "&userID=" + localStorage.getItem('userID');
-
             $.post("/not-just-another-race-timer/end_event_timer",formAndAuth, function(  data ) {
-              console.log(data);
-
+              if(data.affectedRows > 0) alert("The event has ended. Finalizing results.");
+              else alert("Could not end event."); 
             });
         });   
         
