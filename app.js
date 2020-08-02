@@ -335,6 +335,25 @@ app.post("/not-just-another-race-timer/rankings",(req,resp) => {
 });
 
 
+/* Start an event (sets startTime to now) */
+app.post("/not-just-another-race-timer/start_event_timer",isAuthenticated, function  (req,resp) {
+    pool.getConnection((err, connection) => {
+        if(err) { console.log(err); connection.release(); return; }
+        console.log('connected as id ' + connection.threadId);
+        var now = new Date(); 
+        nowISO = now.toISOString();
+        // convert to MySQL datetime
+        now = nowISO.split('T')[0] + ' '  + now.toTimeString().split(' ')[0]; 
+        connection.query('UPDATE Events SET startTime = ? WHERE eventID = ?',[now,req.body.eventID], (err, rows) => {
+            // call back function
+            if(err) { console.log(err); connection.release(); return; }
+            connection.release(); // return the connection to pool
+            resp.json(rows);
+        });
+    });
+});
+
+
 app.listen(port, () => {
     console.log('Server is running at port ' + port);
 });

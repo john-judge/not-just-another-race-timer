@@ -101,7 +101,15 @@
     </div>
 
     <!-- This container is the GUI to edit the event -->
-    <div class="container-fluid" id = "eventEditor">
+    <div class="container-fluid" id = "eventEditor" style="display: none" >
+        <form id="start_event_timer" method="post" action="/">
+            <input type="hidden" id="eventID_to_start" name="eventID"><br><br>
+            <input type="submit" value="Start Timer"> Let the event begin!
+        </form>
+        <form id="end_event_timer" method="post" action="/">
+            <input type="hidden" id="eventID_to_end" name="eventID"><br><br>
+            <input type="submit" value="End Event Timer"> Finalizes results. 
+        </form>        
     </div>
 
      <script>
@@ -139,6 +147,33 @@
               divContainer.appendChild(tblHTML);
             });
         });
+        
+        $("#start_event_timer").on("submit",function  (e) {
+            e.preventDefault();
+
+            var formAndAuth = $(this).serialize() + // includes eventID
+                        "&token=" + localStorage.getItem('token') +
+                        "&userID=" + localStorage.getItem('userID');
+
+            $.post("/not-just-another-race-timer/start_event_timer",formAndAuth, function(  data ) {
+              console.log(data);
+
+            });
+        });        
+
+        $("#end_event_timer").on("submit",function  (e) {
+            e.preventDefault();
+
+            var formAndAuth = $(this).serialize() + // includes eventID
+                        "&token=" + localStorage.getItem('token') +
+                        "&userID=" + localStorage.getItem('userID');
+
+            $.post("/not-just-another-race-timer/end_event_timer",formAndAuth, function(  data ) {
+              console.log(data);
+
+            });
+        });   
+        
      });
      
 
@@ -146,21 +181,19 @@
     function openEventEditor(cells) {
         var id = cells[0].innerHTML;
         var name = cells[1].innerHTML;
-        console.log(id + " " + name);
-        var divContainer = document.getElementById("eventEditor");
+        console.log("Selected event to edit: " + name);
+        var evtEditDiv = document.getElementById("eventEditor");
+        // show the editor div element
+        evtEditDiv.style.display = "block";
+        
+        //set form values for button to start the event timer
+        document.getElementById("eventID_to_start").value = id; 
+        
+        //set form values for button to end the event
+        document.getElementById("eventID_to_end").value = id; 
     
+    // Show the course map
 
-    // Button to start the event timer
-    
-    
-    // Button to finish the event
-    
-    
-    // Edit the course map
-    
-    
-    
-    
     }
 
     </script>
