@@ -124,6 +124,7 @@
                             "&token=" + token +
                             "&userID=" + userID;    	 		
     	 		$.post("/not-just-another-race-timer/home",formAndAuth, function(  data ) {
+    	 		  if(data.error) { alert(data.error); return; }
     	 		  console.log(formAndAuth);
     	 	      var divContainer = document.getElementById("userTable");
     			  var tblHTML = tableJSONtoHTML(data);
@@ -143,6 +144,7 @@
                                 "&token=" + token +
                                 "&userID=" + userID;    	 		
         	 		$.post("/not-just-another-race-timer/cancel_registration",formAndAuth, function(  data ) {
+        	 		  if(data.error) { alert(data.error); return; }
         	 		  if(data.affectedRows == 0) alert("Unable to cancel registration.");
         	 		  else alert("Successfully withdrew registration from event.");
         	 	      var divContainer = document.getElementById("userTable");

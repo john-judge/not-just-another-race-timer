@@ -120,6 +120,7 @@
                         "&token=" + token +
                         "&userID=" + userID;
             $.post("/not-just-another-race-timer/participate",formAndAuth, function(  data ) {
+              if(data.error) { alert(data.error); return; }
               var divContainer = document.getElementById("eventTable");
               var tblHTML = tableJSONtoHTML(data);
               addRowHandlers(tblHTML.childNodes[0],participateInEvent);
@@ -147,6 +148,8 @@
                         "&token=" + token +
                         "&userID=" + userID;
             $.post("/not-just-another-race-timer/participate_insert",formAndAuth, function(  data ) {
+                if(data.error) { alert(data.error); return; }
+                
 
             });
         })        

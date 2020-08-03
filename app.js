@@ -41,7 +41,7 @@ function isAuthenticated(req, res, next) {
         jwt.verify(token, privateKey, { algorithm: "HS256" }, (err, user) => {
             
             if (err) {  
-                res.status(500).json({ error: "Not Authorized" });
+                res.json({ error: "Please login to access this application." });
                 console.log("Not Authorized");
                 return;
                 //throw new Error("Not Authorized");
@@ -52,7 +52,7 @@ function isAuthenticated(req, res, next) {
         });
     } else {
         // No authorization header exists on request
-        res.status(500).json({ error: "Not Authorized: no header" });
+        res.json({ error: "Please login to access this application." });
         console.log("Not Authorized: no header");
         return;
         //throw new Error("Not Authorized: no header");
@@ -396,7 +396,12 @@ app.post("/not-just-another-race-timer/add_waypoint",isAuthenticated, function  
         if(err) { console.log(err); connection.release(); return; }
         console.log('connected to insert point to course map for event ' + req.body.eventID + ' as id ' + connection.threadId);
 
-        connection.query('INSERT INTO CourseWaypoints(eventID,xLocation,yLocation) VALUES(?,?,?)',[req.body.eventID,req.body.xLocation,req.body.yLocation], (err, rows) => {
+        connection.query('INSERT INTO CourseWaypoints(eventID,xLocation,yLocation,latitude,longitude) VALUES(?,?,?,?,?)',
+                [req.body.eventID,
+                req.body.xLocation,
+                req.body.yLocation,
+                req.body.latitude,
+                req.body.longitude], (err, rows) => {
             console.log(rows);
             if(err) { console.log(err); }
             connection.release(); // return the connection to pool

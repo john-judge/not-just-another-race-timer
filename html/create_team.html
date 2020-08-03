@@ -115,6 +115,7 @@
                         "&userID=" + localStorage.getItem('userID');
 
             $.post("/not-just-another-race-timer/create_team",formAndAuth, function(  data ) {
+              if(data.error) { alert(data.error); return; }
               if(data.affectedRows > 0) alert("Successfully created team!");
               else alert("Failed to create team.");
             });
@@ -129,7 +130,7 @@
 
             $.post("/not-just-another-race-timer/get_team",formAndAuth, function(  data ) {
               var teamInfoContainer = document.getElementById("teamInfo");
-              
+              if(data.error) { alert(data.error); return; }
               if(data.length < 1) 
                   teamInfoContainer.innerHTML = "You aren't part of a team. Create or Join a team.";
               else {

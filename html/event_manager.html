@@ -31,7 +31,7 @@
     </style>
     <script>
         "use strict";
-        let map, infoWindow; // declare map object globally.
+        let map, infoWindow,startLine; // declare map object globally.
     </script>
   
   <style>
@@ -139,8 +139,10 @@
         </form>       
         <form id="add_waypoint" method="post" action="/">
             <input type="hidden" id="eventID_add_point" name="eventID">
-            <input type="hidden" id="xCurrLoc" name="xLocation">
-            <input type="hidden" id="yCurrLoc" name="yLocation">
+            <input type="hidden" id="xCurrLoc" name="xLocation" value=0>
+            <input type="hidden" id="yCurrLoc" name="yLocation" value=0>
+            <input type="hidden" id="lng" name="longitude">
+            <input type="hidden" id="lat" name="latitude">            
             <input type="submit" value="Add Current Location to Course Map" id = "loadMapText">
         </form>           
     </div>
@@ -156,12 +158,12 @@
      $(document).ready(function  () {
         $("#create_new_event").on("submit",function  (e) {
             e.preventDefault();
-
             var formAndAuth = $(this).serialize() +
                         "&token=" + localStorage.getItem('token') +
                         "&userID=" + localStorage.getItem('userID');
 
             $.post("/not-just-another-race-timer/event_manager",formAndAuth, function(  data ) {
+              if(data.error) { alert(data.error); return; }
               var divContainer = document.getElementById("eventTable");
               var tblHTML = tableJSONtoHTML(data);
               divContainer.innerHTML = "";
@@ -171,12 +173,12 @@
 
         $("#refresh_my_events").on("submit",function  (e) {
             e.preventDefault();
-
             var formAndAuth = $(this).serialize() +
                         "&token=" + localStorage.getItem('token') +
                         "&userID=" + localStorage.getItem('userID');
 
             $.post("/not-just-another-race-timer/event_manager",formAndAuth, function(  data ) {
+              if(data.error) { alert(data.error); return; }
               var divContainer = document.getElementById("eventTable");
               var tblHTML = tableJSONtoHTML(data);
 
@@ -193,6 +195,7 @@
                         "&token=" + localStorage.getItem('token') +
                         "&userID=" + localStorage.getItem('userID');
             $.post("/not-just-another-race-timer/start_event_timer",formAndAuth, function(  data ) {
+              if(data.error) { alert(data.error); return; }
               if(data.affectedRows > 0) alert("Successfully started the race!");
               else alert("Could not start event."); 
             });
@@ -204,6 +207,7 @@
                         "&token=" + localStorage.getItem('token') +
                         "&userID=" + localStorage.getItem('userID');
             $.post("/not-just-another-race-timer/end_event_timer",formAndAuth, function(  data ) {
+              if(data.error) { alert(data.error); return; }
               if(data.affectedRows > 0) alert("The event has ended. Finalizing results.");
               else alert("Could not end event."); 
             });
@@ -215,7 +219,7 @@
                         "&token=" + localStorage.getItem('token') +
                         "&userID=" + localStorage.getItem('userID');
             $.post("/not-just-another-race-timer/show_course_map",formAndAuth, function(  data ) {
-                
+              if(data.error) { alert(data.error); return; }
               document.getElementById("map").style.display = "block";
               initMap(data);
               document.getElementById("loadMapText").value = "Refresh Map";
@@ -225,10 +229,14 @@
         $("#add_waypoint").on("submit",function  (e) {
             e.preventDefault();
             getUserGeolocation(); //refresh curr location
+            
+            // compute haversine distance (locally approx. Cartesian), relative to startPoint haversineDisplacement
+            
             var formAndAuth = $(this).serialize() + // includes eventID
                         "&token=" + localStorage.getItem('token') +
                         "&userID=" + localStorage.getItem('userID');
             $.post("/not-just-another-race-timer/add_waypoint",formAndAuth, function(  data ) {
+                if(data.error) { alert(data.error); return; }
                 if(data.affectedRows > 0) alert("Successfully added waypoint to course map.");
                 else alert("Failed to add waypoint to map. Waypoints cannot be within 100m of other waypoints.")
             });
@@ -258,7 +266,6 @@
     /* show map data, where DATA is response to show_course_map POST */
     function initMap(data) {
         console.log(data);
-
         
         infoWindow = new google.maps.InfoWindow();
         map = new google.maps.Map(document.getElementById("map"), {
@@ -266,16 +273,38 @@
                 lat: -34.397,
                 lng: 150.644
             },
-            zoom: 12
+            zoom: 16
         });  
-        
         
         if (data.length < 1) {
             getUserGeolocation();
             alert("Empty course map. Choose a starting line.");
         } else {
-            var startLine = {lat: data[0].xLocation, lng: data[0].yLocation };
+            startLine = {lat: data[0].latitude, lng: data[0].longitude };
+            
             map.setCenter(startLine);
+            new google.maps.Marker({
+                position: startLine,
+                map,
+                title: "Start"
+            });
+            var courseWaypoints = [ startLine ];
+            for(var i = 1; i < data.length; i++) {
+                courseWaypoints.push( 
+                    {lat: data[i].latitude, 
+                     lng: data[i].longitude } );
+            }
+            const coursePath = new google.maps.Polyline({
+                path: courseWaypoints,
+                geodesic: true,
+                strokeColor: "#FF0000",
+                strokeOpacity: 1.0,
+                strokeWeight: 2
+            });
+            if(courseWaypoints.length > 1) { 
+                console.log("drawing course..."); 
+                coursePath.setMap(map); 
+            }
         } 
     }
     
@@ -287,8 +316,14 @@
                         lat: position.coords.latitude,
                         lng: position.coords.longitude
                     };
-                    document.getElementById("xCurrLoc").value = pos.lat;
-                    document.getElementById("yCurrLoc").value = pos.lng;
+                    document.getElementById("lat").value = pos.lat;
+                    document.getElementById("lng").value = pos.lng;
+                    
+                    if(startLine) {
+                        var haverDisp = haversineDisplacement(pos,startLine);
+                        document.getElementById("xCurrLoc").value = haverDisp.x;
+                        document.getElementById("yCurrLoc").value = haverDisp.y;
+                    } //else default is 0,0
                     
                     infoWindow.setPosition(pos);
                     infoWindow.setContent("Your location");
