@@ -118,6 +118,15 @@
         <li><a href="/not-just-another-race-timer/join_team">Join Team</a></li>
         <li><a href="/not-just-another-race-timer/rankings">Rankings</a></li>
         <li class="active"><a href="/not-just-another-race-timer/spectate">Spectate</a></li>
+        <br>
+    	
+        <div class="countup" id="timerDisplay" style="display: none">
+          <span class="timeel minutes">00</span>
+          <span class="timeel timeRefMinutes">minutes</span><br><br>
+          <span class="timeel seconds">00</span>
+          <span class="timeel timeRefSeconds">seconds</span>
+        </div>        
+        
       </ul><br>
     </div>
     <br>
@@ -136,16 +145,6 @@
 
         <!-- This table displays the event results -->
         <div class="container-fluid" id = "eventTable"></div>
-        
-        <br>
-    	
-        <div class="countup" id="timerDisplay" style="display: none">
-          <span class="timeel minutes">00</span>
-          <span class="timeel timeRefMinutes">minutes</span>
-          <span class="timeel seconds">00</span>
-          <span class="timeel timeRefSeconds">seconds</span>
-        </div>
-        
         
         <form id="commit_spectate" method="post" action="/" style="display:none">
             <input type="text" name="comment" placeholder="Enter a comment!" id = "commentInput"><br>
@@ -251,12 +250,14 @@
             var name = cells[1].innerHTML;
             var startTime = cells[3].innerHTML;
             startLine = { lat:cells[4].innerHTML, lng:cells[5].innerHTML};
-    		initMap(data,startLine);
+    		initMap(cells,startLine);
     		document.getElementById("map").style.display = "block";
-    			              
+
             var idEl = document.getElementById("timerDisplay");
-            idEl.style.display = "block";
-            countUpFromTime(startTime,idEl);
+            idEl.style.display = "block";		
+    		if(startTime) countUpFromTime(startTime,idEl);
+    		else idEl.style.display = "none";
+		
             document.getElementById("find_athletes").style.display = "block";
             document.getElementById("athleteButtonText").value = "Find Athletes in Event \"" + name + "\"";
 
@@ -356,7 +357,7 @@
             }
         }
         
-        function countUpFromTime(countFrom, idEl) {
+         function countUpFromTime(countFrom, idEl) {
             countFrom = new Date(countFrom).getTime();
             var now = new Date(),
                 countFrom = new Date(countFrom),
@@ -373,7 +374,7 @@
         
             clearTimeout(countUpFromTime.interval);
             countUpFromTime.interval = setTimeout(function(){ countUpFromTime(countFrom, idEl); }, 10);
-        }        
+        }       
 
 
 	 	

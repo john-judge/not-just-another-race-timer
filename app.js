@@ -244,7 +244,7 @@ app.post("/not-just-another-race-timer/participate",isAuthenticated, function  (
         if(err) { console.log(err); connection.release(); return; }
         console.log('connected as id ' + connection.threadId);
         var queryArg = "%" + req.body.eventName + "%";
-        connection.query('SELECT eventID AS EventID, eventName AS Event,distance AS Distance FROM Events WHERE eventName LIKE ?',[queryArg], (err, rows) => {
+        connection.query('SELECT eventID AS EventID, eventName AS Event,distance AS Distance, startTime as Start FROM Events WHERE eventName LIKE ?',[queryArg], (err, rows) => {
             // call back function
             if(err) { console.log(err); connection.release(); return; }
             connection.release(); // return the connection to pool
@@ -479,6 +479,39 @@ app.post("/not-just-another-race-timer/add_waypoint",isAuthenticated, function  
         });
     });
 });
+
+
+
+/* Ranking: find athletes ranked in event */
+app.post("/not-just-another-race-timer/find_live_athletes",isAuthenticated,(req,resp) => {
+    pool.getConnection((err, connection) => {
+        if(err) { console.log(err); connection.release(); return; }
+        console.log('connected as id ' + connection.threadId);
+        var athleteFilter = "%" + req.body.athleteName + "%";
+        connection.query('SELECT userID as AthleteID, name AS Athlete, bibNumber AS BibNumber FROM ParticipatesIn p NATURAL JOIN Users NATURAL JOIN Events WHERE eventID = ?',[req.body.eventID], (err, rows) => {
+            connection.release(); 
+            if(err) { console.log(err); connection.release(); return; }
+            resp.json(rows);
+        });
+    });
+});
+
+
+/* Ranking: find teams ranked in event
+app.post("/not-just-another-race-timer/find_live_athletes",isAuthenticated,(req,resp) => {
+    pool.getConnection((err, connection) => {
+        if(err) { console.log(err); connection.release(); return; }
+        console.log('connected as id ' + connection.threadId);
+        var athleteFilter = "%" + req.body.athleteName + "%";
+        connection.query('SELECT teamID as TeamID, teamName AS Team FROM ParticipatesIn p NATURAL JOIN Users NATURAL JOIN Events WHERE eventID = ?',[req.body.eventID], (err, rows) => {
+            connection.release(); 
+            if(err) { console.log(err); connection.release(); return; }
+            resp.json(rows);
+        });
+    });
+});
+ */
+
 
 
 app.listen(port, () => {
