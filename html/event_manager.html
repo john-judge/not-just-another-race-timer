@@ -18,7 +18,6 @@
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAkPVZnFY15zv16v7boPtz8aDQ2Rkiz4g4&ampcallback=initMap&amplibraries=&ampv=weekly" defer>
   </script> 
   
-  
     <style type="text/css">
     /* Always set the map height explicitly to define the size of the div
     * element that contains the map. */
@@ -221,7 +220,7 @@
             $.post("/not-just-another-race-timer/show_course_map",formAndAuth, function(  data ) {
               if(data.error) { alert(data.error); return; }
               document.getElementById("map").style.display = "block";
-              initMap(data);
+              initMap(data,startLine);
               document.getElementById("loadMapText").value = "Refresh Map";
             });
         });    
@@ -262,11 +261,11 @@
         document.getElementById("map").style.display = "none";
         document.getElementById("loadMapText").value = "Show Course Map";
     }
-    
+
+
     /* show map data, where DATA is response to show_course_map POST */
-    function initMap(data) {
-        console.log(data);
-        
+    function initMap(data,startLine) {
+
         infoWindow = new google.maps.InfoWindow();
         map = new google.maps.Map(document.getElementById("map"), {
             center: {
@@ -302,7 +301,6 @@
                 strokeWeight: 2
             });
             if(courseWaypoints.length > 1) { 
-                console.log("drawing course..."); 
                 coursePath.setMap(map); 
             }
         } 
@@ -337,7 +335,10 @@
         } else {
             alert("Browser doesn't support Geolocation.");
         }
-    }     
+    }
+
+
+
 
     </script>
     

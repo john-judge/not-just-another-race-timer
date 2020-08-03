@@ -4,9 +4,19 @@
   <title>nJART Rankings</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="shortcut icon" href="/not-just-another-race-timer/favicon.ico" type="image/x-icon" />
+  <script src= 
+    "/not-just-another-race-timer/utility/utility.js"> 
+  </script>   
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">
+  </script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js">
+  </script>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=default">
+  </script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAkPVZnFY15zv16v7boPtz8aDQ2Rkiz4g4&ampcallback=initMap&amplibraries=&ampv=weekly" defer>
+  </script> 
   <style>
     /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
     .row.content {height: 550px}
@@ -16,12 +26,55 @@
       background-color: #f1f1f1;
       height: 100%;
     }
+    
+    td {border: 1px #DDD solid; padding: 5px; cursor: pointer;}
+    
+    /* Display of table row when selected */
+    .selected {
+        background-color: #A4D0EE; 
+        color: #FFF;
+    }    
 
     /* On small screens, set height to 'auto' for the grid */
     @media screen and (max-width: 767px) {
       .row.content {height: auto;}
     }
+    
+    .countup {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .countup .timeel {
+      display: inline-block;
+      padding: 10px;
+      background: #151515;
+      margin: 0;
+      color: white;
+      min-width: 2.6rem;
+      margin-left: 13px;
+      border-radius: 10px 0 0 10px;
+    }
+    .countup span[class*="timeRef"] {
+      border-radius: 0 10px 10px 0;
+      margin-left: 0;
+      background: #e8c152;
+      color: black;
+    }
   </style>
+  <style type="text/css">
+    /* Always set the map height explicitly to define the size of the div
+    * element that contains the map. */
+    html, body, #map {
+        margin: 50;
+        padding: 50;
+        height: 90%;
+        width: 90%;
+    }  
+  </style>
+  <script>
+        "use strict";
+        let map, infoWindow,startLine; // declare map object globally.
+  </script>
 </head>
 <body>
 
@@ -72,53 +125,266 @@
     <div class="col-sm-9">
       <div class="well">
         <h3>Spectate Athletes</h3><br>
-        <h4>Search the athletes that you want to spectate here:</h4><br>
         
-        <form id="find_athletes" method="post" action="/">
-    	    <input type="text" name="athleteName" placeholder="Filter Athletes by Name"><br>
-    	    <input type="text" name="eventName" placeholder="Event Keyword"><br>
-    	    <!-- <input type="number" name="age" placeholder="Age"><br> -->
-    	    <input type="submit" value="Find Registered Athletes">
+        <h4>Find live events to spectate:</h4><br>
+        
+        <form id="find_live_events" method="post" action="/">
+    	    <input type="text" name="eventName" placeholder="Filter by Event Keyword..."><br>
+    	    <input type="submit" value="Find Live Events">
     	</form>
-    	
-    	<br><br>
-    	
-        <!-- This table displays the query results -->
-        <div class="container-fluid" id = "userTable">
-        <script>
+    	<br>
 
-    
-    	 $(document).ready(function  () {
-    	 	$("#find_athletes").on("submit",function  (e) {
-    	 		e.preventDefault();
-                let token = localStorage.getItem('token');
-                let userID = localStorage.getItem('userID');
-    
-                var formAndAuth = $(this).serialize() +
-                            "&token=" + token +
-                            "&userID=" + userID;    	 		
-    	 		$.post("/not-just-another-race-timer/home",formAndAuth, function(  data ) {
+        <!-- This table displays the event results -->
+        <div class="container-fluid" id = "eventTable"></div>
+        
+        <br>
+    	
+        <div class="countup" id="timerDisplay" style="display: none">
+          <span class="timeel minutes">00</span>
+          <span class="timeel timeRefMinutes">minutes</span>
+          <span class="timeel seconds">00</span>
+          <span class="timeel timeRefSeconds">seconds</span>
+        </div>
+        
+        
+        <form id="commit_spectate" method="post" action="/" style="display:none">
+            <input type="text" name="comment" placeholder="Enter a comment!" id = "commentInput"><br>
+            <input type="hidden" id="spectateEventID" name="eventID">
+            <input type="hidden" id="spectateAthleteID" name="athleteID">
+            <input type="hidden" id="xCurrLoc" name="xLocation" value=0>
+            <input type="hidden" id="yCurrLoc" name="yLocation" value=0>
+            <input type="hidden" id="lng" name="longitude">
+            <input type="hidden" id="lat" name="latitude">
+            <input type="submit" value="Submit Location and Time as Spectator!" id = "spectate_button">
+        </form>
+        
+        <!-- Map element  -->
+        <div style="height: 490px; position:relative; overflow:hidden" >
+             <div id="map" style = "display: none"> Course Map</div>
+        </div>          
+    	<br>
+    	
+        <form id="find_athletes" method="post" action="/" style="display: none">
+    	    <input type="text" name="athleteName" placeholder="Filter Athletes by Name"><br>
+    	    <input type="hidden" id ="selectedLiveEvent" name="eventID" placeholder="Event Keyword"><br>
+    	    <input type="submit" value="Find Athletes" id = "athleteButtonText">
+    	</form><br>
+    	
+        <!-- This table displays the athlete results -->
+        <div class="container-fluid" id = "athleteTable"></div>
+        <br>	    	
+        
+      </div>
+      
+    <script>
+	 $(document).ready(function  () {
+	     
+	 	$("#find_live_events").on("submit",function  (e) {
+	 		e.preventDefault();
+            let token = localStorage.getItem('token');
+            let userID = localStorage.getItem('userID');
+            document.getElementById("find_athletes").style.display = "none";
+            document.getElementById("athleteTable").style.display = "none";
+            document.getElementById("commit_spectate").style.display = "none";
+            document.getElementById("timerDisplay").style.display = "none";
+            var formAndAuth = $(this).serialize() +
+                        "&token=" + token +
+                        "&userID=" + userID;    	 		
+	 		$.post("/not-just-another-race-timer/find_live_events",formAndAuth, function(  data ) {
     	 		  if(data.error) { alert(data.error); return; }
-    	 		  console.log(formAndAuth);
-    	 	      var divContainer = document.getElementById("userTable");
+    	 		  console.log(data);
+    	 	      var divContainer = document.getElementById("eventTable");
     			  var tblHTML = tableJSONtoHTML(data);
-    			  addRowHandlers(tblHTML.childNodes[0],promptCancelRegister);
+    			  addRowHandlers(tblHTML.childNodes[0],selectLiveEvent);
 
     			  divContainer.innerHTML = "";
                   divContainer.appendChild(tblHTML);
-    			});
-    	 	});
-    	 	
-    	 });
+                  
+                  //document.getElementById("find_live_events").style.display="block";
+			});
+	 	});    	     
+	     
+	 	$("#find_athletes").on("submit",function  (e) {
+	 		e.preventDefault();
+            let token = localStorage.getItem('token');
+            let userID = localStorage.getItem('userID');
+            document.getElementById("athleteTable").style.display = "block";
+
+            var formAndAuth = $(this).serialize() +
+                        "&token=" + token +
+                        "&userID=" + userID;    	 		
+	 		$.post("/not-just-another-race-timer/find_live_athletes",formAndAuth, function(  data ) {
+    	 		  if(data.error) { alert(data.error); return; }
+    	 		  console.log(data);
+    	 	      var divContainer = document.getElementById("athleteTable");
+    			  var tblHTML = tableJSONtoHTML(data);
+    			  addRowHandlers(tblHTML.childNodes[0],selectAthlete);
+
+    			  divContainer.innerHTML = "";
+                  divContainer.appendChild(tblHTML);
+			});
+	 	});
+			
+	 	$("#commit_spectate").on("submit",function  (e) {
+	 		e.preventDefault();
+            let token = localStorage.getItem('token');
+            let userID = localStorage.getItem('userID');
+            
+            getUserGeolocation();
+            document.getElementById("athleteButtonText").value
+
+            var formAndAuth = $(this).serialize() +
+                        "&token=" + token +
+                        "&userID=" + userID;    	 		
+	 		$.post("/not-just-another-race-timer/commit_spectate",formAndAuth, function(  data ) {
+    	 		  if(data.error) { alert(data.error); return; }
+    	 		  console.log(data);
+    	 	      
+			});
+	 	});
+	 
+	 });
+	 	
+	 	
+	 	function selectLiveEvent(cells) {
+            var id = cells[0].innerHTML;
+            var name = cells[1].innerHTML;
+            var startTime = cells[3].innerHTML;
+            startLine = { lat:cells[4].innerHTML, lng:cells[5].innerHTML};
+    		initMap(data,startLine);
+    		document.getElementById("map").style.display = "block";
+    			              
+            var idEl = document.getElementById("timerDisplay");
+            idEl.style.display = "block";
+            countUpFromTime(startTime,idEl);
+            document.getElementById("find_athletes").style.display = "block";
+            document.getElementById("athleteButtonText").value = "Find Athletes in Event \"" + name + "\"";
+
+            document.getElementById("commit_spectate").style.display = "none";
+            
+            document.getElementById("spectateAthleteID").value = null; 
+            
+            //set form values to eventID for buttons
+            document.getElementById("selectedLiveEvent").value = id; 
+            
+            
+        }
         
-   
+	 	function selectAthlete(cells) {
+            var id = cells[0].innerHTML;
+            
+            console.log("Selected athleteID: " + id);
+            
+            document.getElementById("commentInput").value = "Enter a comment for " + cells[1].innerHTML;
+            document.getElementById("find_athletes").style.display = "block";
+            document.getElementById("commit_spectate").style.display = "block";
+            document.getElementById("spectateAthleteID").value = id; 
+            document.getElementById("spectateEventID").value = id; 
+        }        
+                
+        /* show map data, where DATA is response to show_course_map POST */
+        function initMap(data,startLine) {
+    
+            infoWindow = new google.maps.InfoWindow();
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: {
+                    lat: -34.386,
+                    lng: 150.646
+                },
+                zoom: 16
+            });  
+            
+            if (data.length < 1) {
+                getUserGeolocation();
+                alert("Empty course map. Choose a starting line.");
+            } else {
+                startLine = {lat: data[0].latitude, lng: data[0].longitude };
+                
+                map.setCenter(startLine);
+                new google.maps.Marker({
+                    position: startLine,
+                    map,
+                    title: "Start"
+                });
+                var courseWaypoints = [ startLine ];
+                for(var i = 1; i < data.length; i++) {
+                    courseWaypoints.push( 
+                        {lat: data[i].latitude, 
+                         lng: data[i].longitude } );
+                }
+                const coursePath = new google.maps.Polyline({
+                    path: courseWaypoints,
+                    geodesic: true,
+                    strokeColor: "#FF0000",
+                    strokeOpacity: 1.0,
+                    strokeWeight: 2
+                });
+                if(courseWaypoints.length > 1) { 
+                    coursePath.setMap(map); 
+                }
+            } 
+        }
         
-         </script>
-        </div>
+        function getUserGeolocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    position => {
+                        const pos = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        document.getElementById("lat").value = pos.lat;
+                        document.getElementById("lng").value = pos.lng;
+                        
+                        if(startLine) {
+                            var haverDisp = haversineDisplacement(pos,startLine);
+                            document.getElementById("xCurrLoc").value = haverDisp.x;
+                            document.getElementById("yCurrLoc").value = haverDisp.y;
+                        } //else default is 0,0
+                        
+                        infoWindow.setPosition(pos);
+                        infoWindow.setContent("Your location");
+                        infoWindow.open(map);
+                        map.setCenter(pos);
+                    },
+                    () => {
+                        alert("Failed to find your location.");
+                    }
+                    );
+            } else {
+                alert("Browser doesn't support Geolocation.");
+            }
+        }
+        
+        function countUpFromTime(countFrom, idEl) {
+            countFrom = new Date(countFrom).getTime();
+            var now = new Date(),
+                countFrom = new Date(countFrom),
+                timeDifference = (now - countFrom);
+
+            mins = Math.floor(timeDifference / 60000);
+            timeDifference %= 60000;
+            timeDifference = Math.floor(timeDifference / 100);
+            secs = (timeDifference / 10);
+            if(secs == Math.floor(secs)) secs += ".0";
+        
+            idEl.getElementsByClassName('minutes')[0].innerHTML = mins;
+            idEl.getElementsByClassName('seconds')[0].innerHTML = secs;
+        
+            clearTimeout(countUpFromTime.interval);
+            countUpFromTime.interval = setTimeout(function(){ countUpFromTime(countFrom, idEl); }, 10);
+        }        
+
+
+	 	
+	 
+    
+     </script>
+     
       </div>
       </div>
     </div>
-  </div>
+
 
 
 </body>

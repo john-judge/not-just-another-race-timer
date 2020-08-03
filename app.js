@@ -79,7 +79,7 @@ app.post('/not-just-another-race-timer/api/login', function (req,resp) {
     });
 });
 
-/* Home page, find and spectate athletes */
+/* Home page, find athletes and registrations */
 app.get("/not-just-another-race-timer",function  (req,resp) {
     pool.getConnection((err, connection) => {
         if(err) { console.log(err); connection.release(); return; }
@@ -89,7 +89,7 @@ app.get("/not-just-another-race-timer",function  (req,resp) {
     });
 });
 
-/* Home page, find and spectate athletes */
+/* Home page, find athletes and manage registration */
 app.post("/not-just-another-race-timer/home",isAuthenticated,(req,resp) => {
     pool.getConnection((err, connection) => {
         if(err) { console.log(err); connection.release(); return; }
@@ -103,6 +103,76 @@ app.post("/not-just-another-race-timer/home",isAuthenticated,(req,resp) => {
         });
     });
 });
+
+/* Spectate athletes */
+app.get("/not-just-another-race-timer/spectate",function  (req,resp) {
+    pool.getConnection((err, connection) => {
+        connection.release(); 
+        if(err) { console.log(err); return; }
+        console.log('connected home get as id ' + connection.threadId);
+        resp.sendFile(__dirname+"/html/spectate.html");
+        
+    });
+});
+
+/* Spectate: find live events */
+app.post("/not-just-another-race-timer/find_live_events",isAuthenticated,(req,resp) => {
+    pool.getConnection((err, connection) => {
+        if(err) { console.log(err); connection.release(); return; }
+        console.log('connected as id ' + connection.threadId);
+        var eventFilter = "%" + req.body.eventName + "%";
+
+        connection.query('SELECT e.eventID AS EventID, e.eventName AS Event, e.distance AS Distance, e.startTime, c.latitude, c.longitude FROM Events e LEFT JOIN CourseWaypoints c ON e.eventID = c.eventID WHERE c.distance = 0 AND e.eventName LIKE ? AND e.startTime IS NOT NULL AND e.isFinished <> TRUE',[eventFilter], (err, rows) => {
+            connection.release(); 
+            if(err) { console.log(err); return; }
+            resp.json(rows);
+        });
+    });
+});
+
+/* Spectate: find athletes to spectate */
+app.post("/not-just-another-race-timer/find_live_athletes",isAuthenticated,(req,resp) => {
+    pool.getConnection((err, connection) => {
+        if(err) { console.log(err); connection.release(); return; }
+        console.log('connected as id ' + connection.threadId);
+        var athleteFilter = "%" + req.body.athleteName + "%";
+        connection.query('SELECT userID as AthleteID, name AS Athlete, bibNumber AS BibNumber FROM ParticipatesIn p NATURAL JOIN Users NATURAL JOIN Events WHERE eventID = ? AND name LIKE ?',[req.body.eventID,athleteFilter], (err, rows) => {
+            connection.release(); 
+            if(err) { console.log(err); connection.release(); return; }
+            resp.json(rows);
+        });
+    });
+});
+
+
+/* Spectate: insert spectate entry */
+app.post("/not-just-another-race-timer/commit_spectate",isAuthenticated, function  (req,resp) {
+    pool.getConnection((err, connection) => {
+        if(err) { console.log(err); connection.release(); return; }
+        console.log('connected as id ' + connection.threadId);
+        var now = new Date(); 
+        nowISO = now.toISOString();
+        // convert to MySQL datetime
+        now = nowISO.split('T')[0] + ' '  + now.toTimeString().split(' ')[0]; 
+        connection.query('INSERT INTO Spectates(userID,eventID,athleteID,xLocation,yLocation,latitude,longitude,timestamp,comment) VALUES(?,?,?,?,?,?,?,?,?)',
+                [req.body.userID,
+                 req.body.eventID,
+                 req.body.athleteID,
+                 req.body.xLocation,
+                 req.body.yLocation,
+                 req.body.latitude,
+                 req.body.longitude,
+                 now,
+                 req.body.comment], 
+                 (err, result, fields) => {
+            if(err) { console.log(err); connection.release(); return; }
+            connection.release(); 
+            resp.json(result);
+            console.log(result);
+        });
+    });
+});
+
 
 /* Cancel registration */
 app.post("/not-just-another-race-timer/cancel_registration",isAuthenticated,(req,resp) => {
@@ -192,7 +262,7 @@ app.post("/not-just-another-race-timer/participate_insert",isAuthenticated, func
         connection.query('INSERT INTO ParticipatesIn(userID,eventID) VALUES(?,?)',[req.body.userID,req.body.eventID], (err, result, fields) => {
             if(err) { console.log(err); connection.release(); return; }
             connection.release(); 
-            
+            resp.json(result);
             console.log(result);
         });
     });
@@ -366,7 +436,7 @@ app.post("/not-just-another-race-timer/end_event_timer",isAuthenticated, functio
         if(err) { console.log(err); connection.release(); return; }
         console.log('connected as id ' + connection.threadId);
 
-        connection.query('UPDATE Events SET isFinished = FALSE WHERE eventID = ? AND startTime IS NOT NULL',[req.body.eventID], (err, rows) => {
+        connection.query('UPDATE Events SET isFinished = TRUE WHERE eventID = ? AND startTime IS NOT NULL',[req.body.eventID], (err, rows) => {
             // call back function
             if(err) { console.log(err); connection.release(); return; }
             connection.release(); // return the connection to pool
