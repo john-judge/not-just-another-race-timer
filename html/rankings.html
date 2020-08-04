@@ -115,7 +115,7 @@
 
     <div class="col-sm-9">
       <div class="well">
-        <h4>Current Rankings</h4><br>
+        <h4>Results and Current Rankings</h4><br>
 
         <form id="find_events" method="post" action="/">
             Find Events: <input type="text" id="queryEventName" name="eventName" placeholder="Keyword"><br><br>
@@ -148,6 +148,9 @@
             e.preventDefault();
             let token = localStorage.getItem('token');
             let userID = localStorage.getItem('userID');
+
+    		document.getElementById("athleteRankingButton").value = "Show Athlete Rankings";
+    		document.getElementById("teamRankingButton").value = "Show Team Rankings";	
 
             var queryEventName = document.getElementById("queryEventName").value;
             var formAndAuth = $(this).serialize() +
@@ -185,7 +188,7 @@
               var divContainer = document.getElementById("reportTable");
               divContainer.style.display = "block";
               var tblHTML = tableJSONtoHTML(data);
-              //addRowHandlers(tblHTML.childNodes[0],selectEventToRank);
+              addRowHandlers(tblHTML.childNodes[0],function() {});
               divContainer.innerHTML = "";
               divContainer.appendChild(tblHTML);
 
@@ -207,12 +210,12 @@
             var formAndAuth = $(this).serialize() +
                         "&token=" + token +
                         "&userID=" + userID;
-            $.post("/not-just-another-race-timer/show_athlete_rankings",formAndAuth, function(  data ) {
+            $.post("/not-just-another-race-timer/show_team_rankings",formAndAuth, function(  data ) {
               if(data.error) { alert(data.error); return; }
               var divContainer = document.getElementById("reportTable");
               divContainer.style.display = "block";
               var tblHTML = tableJSONtoHTML(data);
-              //addRowHandlers(tblHTML.childNodes[0],selectEventToRank);
+              addRowHandlers(tblHTML.childNodes[0],function() {} );
               divContainer.innerHTML = "";
               divContainer.appendChild(tblHTML);
 
@@ -245,8 +248,8 @@
 		document.getElementById("athleteEventID").value = id;
 		document.getElementById("teamEventID").value = id;
 		
-		document.getElementById("athleteRankingButton").value = "Show Athlete Rankings for " + name;
-		document.getElementById("teamRankingButton").value = "Show Team Rankings for " + name;;		
+		document.getElementById("athleteRankingButton").value = "Show Athlete Rankings for \"" + name + "\"";
+		document.getElementById("teamRankingButton").value = "Show Team Rankings for \"" + name + "\"";		
         /*
         
         document.getElementById("athleteButtonText").value = "Find Athletes in Event \"" + name + "\"";
@@ -285,7 +288,7 @@
     </div>
       </div>
       </div>
-    </div>
+
 
 
 </body>

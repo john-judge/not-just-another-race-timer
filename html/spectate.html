@@ -250,7 +250,7 @@
             var name = cells[1].innerHTML;
             var startTime = cells[3].innerHTML;
             startLine = { lat:cells[4].innerHTML, lng:cells[5].innerHTML};
-    		initMap(cells,startLine);
+    		initMap(cells);
     		document.getElementById("map").style.display = "block";
 
             var idEl = document.getElementById("timerDisplay");
@@ -284,7 +284,7 @@
         }        
                 
         /* show map data, where DATA is response to show_course_map POST */
-        function initMap(data,startLine) {
+        function initMap(data) {
     
             infoWindow = new google.maps.InfoWindow();
             map = new google.maps.Map(document.getElementById("map"), {

@@ -460,18 +460,19 @@ app.post("/not-just-another-race-timer/show_course_map",isAuthenticated, functio
     });
 });
 
-/* Get all waypoints of map for an event's course */
+/*Add waypoints for an event's course */
 app.post("/not-just-another-race-timer/add_waypoint",isAuthenticated, function  (req,resp) {
     pool.getConnection((err, connection) => {
         if(err) { console.log(err); connection.release(); return; }
         console.log('connected to insert point to course map for event ' + req.body.eventID + ' as id ' + connection.threadId);
 
-        connection.query('INSERT INTO CourseWaypoints(eventID,xLocation,yLocation,latitude,longitude) VALUES(?,?,?,?,?)',
+        connection.query('INSERT INTO CourseWaypoints(eventID,xLocation,yLocation,latitude,longitude,distance) VALUES(?,?,?,?,?,?)',
                 [req.body.eventID,
                 req.body.xLocation,
                 req.body.yLocation,
                 req.body.latitude,
-                req.body.longitude], (err, rows) => {
+                req.body.longitude,
+                req.body.distance], (err, rows) => {
             console.log(rows);
             if(err) { console.log(err); }
             connection.release(); // return the connection to pool
@@ -483,34 +484,43 @@ app.post("/not-just-another-race-timer/add_waypoint",isAuthenticated, function  
 
 
 /* Ranking: find athletes ranked in event */
-app.post("/not-just-another-race-timer/find_live_athletes",isAuthenticated,(req,resp) => {
+app.post("/not-just-another-race-timer/show_athlete_rankings",isAuthenticated,(req,resp) => {
     pool.getConnection((err, connection) => {
         if(err) { console.log(err); connection.release(); return; }
         console.log('connected as id ' + connection.threadId);
         var athleteFilter = "%" + req.body.athleteName + "%";
-        connection.query('SELECT userID as AthleteID, name AS Athlete, bibNumber AS BibNumber FROM ParticipatesIn p NATURAL JOIN Users NATURAL JOIN Events WHERE eventID = ?',[req.body.eventID], (err, rows) => {
+        connection.query('SELECT userID as AthleteID, name AS Athlete, bibNumber AS BibNumber,finishTime AS Time, finishTime/currentDistance AS Pace, currentDistance as Progress FROM ParticipatesIn p NATURAL JOIN Users NATURAL JOIN Events WHERE eventID = ? ORDER BY Progress DESC, Pace',[req.body.eventID], (err, rows) => {
             connection.release(); 
-            if(err) { console.log(err); connection.release(); return; }
+            if(err) { console.log(err); return; }
             resp.json(rows);
         });
     });
 });
 
 
-/* Ranking: find teams ranked in event
-app.post("/not-just-another-race-timer/find_live_athletes",isAuthenticated,(req,resp) => {
+/* Ranking: find teams ranked in event */
+app.post("/not-just-another-race-timer/show_team_rankings",isAuthenticated,(req,resp) => {
     pool.getConnection((err, connection) => {
         if(err) { console.log(err); connection.release(); return; }
         console.log('connected as id ' + connection.threadId);
         var athleteFilter = "%" + req.body.athleteName + "%";
-        connection.query('SELECT teamID as TeamID, teamName AS Team FROM ParticipatesIn p NATURAL JOIN Users NATURAL JOIN Events WHERE eventID = ?',[req.body.eventID], (err, rows) => {
+        
+        var subQueryTop5 = 'SELECT *, ' +
+                           '@team_rank := IF(@curr_team = teamID, @team_rank + 1, 1) AS team_rank, ' + 
+                           '@curr_team := teamID ' + 
+                           'FROM ParticipatesIn NATURAL JOIN Users NATURAL JOIN Events ' + 
+                           'ORDER BY teamID, rank';
+        
+        var query = "SELECT ir.teamID, t.teamName as Team, u.name as Captain, SUM(ir.team_rank) as Score, AVG(ir.finishTime) AS AverageTime FROM (" + subQueryTop5 + ") ir NATURAL JOIN Teams t LEFT JOIN Users u ON u.userID = t.teamCaptain WHERE ir.team_rank <= 5 AND eventID = ? GROUP BY ir.teamID";
+        
+        connection.query(query,[req.body.eventID], (err, rows) => {
             connection.release(); 
-            if(err) { console.log(err); connection.release(); return; }
+            if(err) { console.log(err); return; }
             resp.json(rows);
         });
     });
 });
- */
+
 
 
 

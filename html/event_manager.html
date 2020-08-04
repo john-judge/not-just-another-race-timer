@@ -30,7 +30,7 @@
     </style>
     <script>
         "use strict";
-        let map, infoWindow,startLine; // declare map object globally.
+        let map, infoWindow,startLine,finishPoint,lastDistance,currMapData,courseWaypoints; // declare map object globally.
     </script>
   
   <style>
@@ -141,7 +141,8 @@
             <input type="hidden" id="xCurrLoc" name="xLocation" value=0>
             <input type="hidden" id="yCurrLoc" name="yLocation" value=0>
             <input type="hidden" id="lng" name="longitude">
-            <input type="hidden" id="lat" name="latitude">            
+            <input type="hidden" id="lat" name="latitude">
+            <input type="hidden" id="nextDistance" name="distance" value=0>
             <input type="submit" value="Add Current Location to Course Map" id = "loadMapText">
         </form>           
     </div>
@@ -218,16 +219,24 @@
                         "&token=" + localStorage.getItem('token') +
                         "&userID=" + localStorage.getItem('userID');
             $.post("/not-just-another-race-timer/show_course_map",formAndAuth, function(  data ) {
+              currMapData = data;
               if(data.error) { alert(data.error); return; }
               document.getElementById("map").style.display = "block";
-              initMap(data,startLine);
+              
+              getUserGeolocation();
+              cacheMapValues(data);
+              initMap(currMapData);
+              
               document.getElementById("loadMapText").value = "Refresh Map";
             });
         });    
         
         $("#add_waypoint").on("submit",function  (e) {
             e.preventDefault();
-            getUserGeolocation(); //refresh curr location
+            
+            //refresh curr location
+            getUserGeolocation();
+            cacheMapValues(currMapData); 
             
             // compute haversine distance (locally approx. Cartesian), relative to startPoint haversineDisplacement
             
@@ -238,6 +247,7 @@
                 if(data.error) { alert(data.error); return; }
                 if(data.affectedRows > 0) alert("Successfully added waypoint to course map.");
                 else alert("Failed to add waypoint to map. Waypoints cannot be within 100m of other waypoints.")
+                
             });
         });     
      });
@@ -264,8 +274,10 @@
 
 
     /* show map data, where DATA is response to show_course_map POST */
-    function initMap(data,startLine) {
-
+    function initMap(data) {
+        
+        
+        
         infoWindow = new google.maps.InfoWindow();
         map = new google.maps.Map(document.getElementById("map"), {
             center: {
@@ -275,11 +287,11 @@
             zoom: 16
         });  
         
+        
+        
         if (data.length < 1) {
-            getUserGeolocation();
-            alert("Empty course map. Choose a starting line.");
+            alert("Empty course map. Choose a start line.");
         } else {
-            startLine = {lat: data[0].latitude, lng: data[0].longitude };
             
             map.setCenter(startLine);
             new google.maps.Marker({
@@ -287,12 +299,7 @@
                 map,
                 title: "Start"
             });
-            var courseWaypoints = [ startLine ];
-            for(var i = 1; i < data.length; i++) {
-                courseWaypoints.push( 
-                    {lat: data[i].latitude, 
-                     lng: data[i].longitude } );
-            }
+            
             const coursePath = new google.maps.Polyline({
                 path: courseWaypoints,
                 geodesic: true,
@@ -303,7 +310,23 @@
             if(courseWaypoints.length > 1) { 
                 coursePath.setMap(map); 
             }
-        } 
+        }
+    }
+    
+    function cacheMapValues(data) {
+        
+            
+        if(data.length > 0) {
+            startLine = {lat: data[0].latitude, lng: data[0].longitude };
+            
+            courseWaypoints = [ startLine ];
+            for(var i = 1; i < data.length; i++) {
+                courseWaypoints.push( 
+                    {lat: data[i].latitude, 
+                     lng: data[i].longitude } );
+            }
+            
+        }        
     }
     
     function getUserGeolocation() {
@@ -321,6 +344,7 @@
                         var haverDisp = haversineDisplacement(pos,startLine);
                         document.getElementById("xCurrLoc").value = haverDisp.x;
                         document.getElementById("yCurrLoc").value = haverDisp.y;
+
                     } //else default is 0,0
                     
                     infoWindow.setPosition(pos);
