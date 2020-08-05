@@ -151,6 +151,7 @@ app.post("/not-just-another-race-timer/commit_spectate",isAuthenticated, functio
         if(err) { console.log(err); connection.release(); return; }
         console.log('connected as id ' + connection.threadId);
         var now = new Date(); 
+        
         nowISO = now.toISOString();
         // convert to MySQL datetime
         now = nowISO.split('T')[0] + ' '  + now.toTimeString().split(' ')[0]; 
@@ -165,7 +166,7 @@ app.post("/not-just-another-race-timer/commit_spectate",isAuthenticated, functio
                  now,
                  req.body.comment], 
                  (err, result, fields) => {
-            if(err) { console.log(err); connection.release(); return; }
+            if(err) { console.log(err); resp.json(err.sqlMessage); }
             connection.release(); 
             resp.json(result);
             console.log(result);
@@ -474,7 +475,7 @@ app.post("/not-just-another-race-timer/add_waypoint",isAuthenticated, function  
                 req.body.longitude,
                 req.body.distance], (err, rows) => {
             console.log(rows);
-            if(err) { console.log(err); }
+            if(err) { console.log(err); resp.json(rows.sqlMessage); }
             connection.release(); // return the connection to pool
             resp.json(rows);
         });

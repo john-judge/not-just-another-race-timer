@@ -239,7 +239,10 @@
 		//initMap(data,startLine);
 		
         var idEl = document.getElementById("timerDisplay");
-        idEl.style.display = "block";		
+        idEl.style.display = "block";	
+        var t = startTime.split(/[- :TZ]/);
+        var countFrom = new Date(Date.UTC(t[0], t[1]-1, t[2], t[3], t[4], t[5]));
+        console.log(countFrom);console.log(t); console.log(new Date());
 		if(startTime) countUpFromTime(startTime,idEl);
 		else idEl.style.display = "none";
 		
@@ -266,7 +269,7 @@
     }    
     
         function countUpFromTime(countFrom, idEl) {
-            countFrom = new Date(countFrom).getTime();
+
             var now = new Date(),
                 countFrom = new Date(countFrom),
                 timeDifference = (now - countFrom);

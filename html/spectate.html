@@ -73,7 +73,7 @@
   </style>
   <script>
         "use strict";
-        let map, infoWindow,startLine; // declare map object globally.
+        let map, infoWindow,startLine,finishPoint,lastDistance,currMapData,courseWaypoints; // declare map object globally.
   </script>
 </head>
 <body>
@@ -146,22 +146,17 @@
         <!-- This table displays the event results -->
         <div class="container-fluid" id = "eventTable"></div>
         
-        <form id="commit_spectate" method="post" action="/" style="display:none">
-            <input type="text" name="comment" placeholder="Enter a comment!" id = "commentInput"><br>
-            <input type="hidden" id="spectateEventID" name="eventID">
-            <input type="hidden" id="spectateAthleteID" name="athleteID">
-            <input type="hidden" id="xCurrLoc" name="xLocation" value=0>
-            <input type="hidden" id="yCurrLoc" name="yLocation" value=0>
-            <input type="hidden" id="lng" name="longitude">
-            <input type="hidden" id="lat" name="latitude">
-            <input type="submit" value="Submit Location and Time as Spectator!" id = "spectate_button">
-        </form>
+        <form id="show_course_map" method="post" action="/">
+            <input type="hidden" id="eventID_map" name="eventID">
+            <input type="submit" value="Show My Location" id = "loadMapText">
+        </form> 
         
         <!-- Map element  -->
         <div style="height: 490px; position:relative; overflow:hidden" >
-             <div id="map" style = "display: none"> Course Map</div>
-        </div>          
+             <div id="map" style = "display: none"> </div>
+        </div>             
     	<br>
+    	
     	
         <form id="find_athletes" method="post" action="/" style="display: none">
     	    <input type="text" name="athleteName" placeholder="Filter Athletes by Name"><br>
@@ -173,6 +168,17 @@
         <div class="container-fluid" id = "athleteTable"></div>
         <br>	    	
         
+        <form id="commit_spectate" method="post" action="/" style="display:none">
+            <input type="text" name="comment" placeholder="Enter a comment!" id = "commentInput"><br>
+            <input type="hidden" id="spectateEventID" name="eventID">
+            <input type="hidden" id="spectateAthleteID" name="athleteID">
+            <input type="hidden" id="xCurrLoc" name="xLocation" value=0>
+            <input type="hidden" id="yCurrLoc" name="yLocation" value=0>
+            <input type="hidden" id="lng" name="longitude">
+            <input type="hidden" id="lat" name="latitude">
+            <input type="submit" value="Submit Location and Time as Spectator!" id = "spectate_button">
+        </form>    	<br>        
+        
       </div>
       
     <script>
@@ -180,8 +186,10 @@
 	     
 	 	$("#find_live_events").on("submit",function  (e) {
 	 		e.preventDefault();
+	 		
             let token = localStorage.getItem('token');
             let userID = localStorage.getItem('userID');
+            //document.getElementById("show_course_map").style.display = "none";
             document.getElementById("find_athletes").style.display = "none";
             document.getElementById("athleteTable").style.display = "none";
             document.getElementById("commit_spectate").style.display = "none";
@@ -201,7 +209,25 @@
                   
                   //document.getElementById("find_live_events").style.display="block";
 			});
-	 	});    	     
+	 	});   
+	 	
+        $("#show_course_map").on("submit",function  (e) {
+            e.preventDefault();
+            var formAndAuth = $(this).serialize() + // includes eventID
+                        "&token=" + localStorage.getItem('token') +
+                        "&userID=" + localStorage.getItem('userID');
+            $.post("/not-just-another-race-timer/show_course_map",formAndAuth, function(  data ) {
+              currMapData = data;
+              if(data.error) { alert(data.error); return; }
+              document.getElementById("map").style.display = "block";
+              
+              getUserGeolocation();
+              cacheMapValues(currMapData);
+              initMap(currMapData);
+              
+              document.getElementById("loadMapText").value = "Refresh Map";
+            });
+        }); 	 	
 	     
 	 	$("#find_athletes").on("submit",function  (e) {
 	 		e.preventDefault();
@@ -230,6 +256,8 @@
             let userID = localStorage.getItem('userID');
             
             getUserGeolocation();
+            cacheMapValues(currMapData);
+            
             document.getElementById("athleteButtonText").value
 
             var formAndAuth = $(this).serialize() +
@@ -237,6 +265,8 @@
                         "&userID=" + userID;    	 		
 	 		$.post("/not-just-another-race-timer/commit_spectate",formAndAuth, function(  data ) {
     	 		  if(data.error) { alert(data.error); return; }
+    	 		  if(typeof data == "string") alert(data);
+    	 		  if(data.affectedRows > 0) alert("Successfully spectated.");
     	 		  console.log(data);
     	 	      
 			});
@@ -250,14 +280,21 @@
             var name = cells[1].innerHTML;
             var startTime = cells[3].innerHTML;
             startLine = { lat:cells[4].innerHTML, lng:cells[5].innerHTML};
-    		initMap(cells);
+    		
     		document.getElementById("map").style.display = "block";
 
             var idEl = document.getElementById("timerDisplay");
-            idEl.style.display = "block";		
+            idEl.style.display = "block";
+            
+            var t = startTime.split(/[- :TZ]/);
+            var countFrom = new Date(Date.UTC(t[0], t[1]-1, t[2], t[3], t[4], t[5]));
+            
+            
+            console.log(countFrom);console.log(t); console.log(new Date());
     		if(startTime) countUpFromTime(startTime,idEl);
     		else idEl.style.display = "none";
 		
+		    //document.getElementById("show_course_map").style.display = "block";
             document.getElementById("find_athletes").style.display = "block";
             document.getElementById("athleteButtonText").value = "Find Athletes in Event \"" + name + "\"";
 
@@ -283,23 +320,24 @@
             document.getElementById("spectateEventID").value = id; 
         }        
                 
+    
         /* show map data, where DATA is response to show_course_map POST */
         function initMap(data) {
-    
+            
             infoWindow = new google.maps.InfoWindow();
             map = new google.maps.Map(document.getElementById("map"), {
                 center: {
-                    lat: -34.386,
-                    lng: 150.646
+                    lat: -34.397,
+                    lng: 150.644
                 },
                 zoom: 16
             });  
             
+            
+            
             if (data.length < 1) {
-                getUserGeolocation();
-                alert("Empty course map. Choose a starting line.");
+                
             } else {
-                startLine = {lat: data[0].latitude, lng: data[0].longitude };
                 
                 map.setCenter(startLine);
                 new google.maps.Marker({
@@ -307,12 +345,7 @@
                     map,
                     title: "Start"
                 });
-                var courseWaypoints = [ startLine ];
-                for(var i = 1; i < data.length; i++) {
-                    courseWaypoints.push( 
-                        {lat: data[i].latitude, 
-                         lng: data[i].longitude } );
-                }
+                
                 const coursePath = new google.maps.Polyline({
                     path: courseWaypoints,
                     geodesic: true,
@@ -323,7 +356,23 @@
                 if(courseWaypoints.length > 1) { 
                     coursePath.setMap(map); 
                 }
-            } 
+            }
+        }
+        
+        function cacheMapValues(data) {
+            
+                
+            if(data.length > 0) {
+                startLine = {lat: data[0].latitude, lng: data[0].longitude };
+                
+                courseWaypoints = [ startLine ];
+                for(var i = 1; i < data.length; i++) {
+                    courseWaypoints.push( 
+                        {lat: data[i].latitude, 
+                         lng: data[i].longitude } );
+                }
+                
+            }        
         }
         
         function getUserGeolocation() {
@@ -341,6 +390,7 @@
                             var haverDisp = haversineDisplacement(pos,startLine);
                             document.getElementById("xCurrLoc").value = haverDisp.x;
                             document.getElementById("yCurrLoc").value = haverDisp.y;
+    
                         } //else default is 0,0
                         
                         infoWindow.setPosition(pos);
@@ -349,32 +399,33 @@
                         map.setCenter(pos);
                     },
                     () => {
-                        alert("Failed to find your location.");
+                        alert("Failed to find your location. Use an HTTPS connection.");
                     }
                     );
             } else {
                 alert("Browser doesn't support Geolocation.");
             }
         }
-        
-         function countUpFromTime(countFrom, idEl) {
-            countFrom = new Date(countFrom).getTime();
-            var now = new Date(),
-                countFrom = new Date(countFrom),
-                timeDifference = (now - countFrom);
 
-            mins = Math.floor(timeDifference / 60000);
-            timeDifference %= 60000;
-            timeDifference = Math.floor(timeDifference / 100);
-            secs = (timeDifference / 10);
-            if(secs == Math.floor(secs)) secs += ".0";
-        
-            idEl.getElementsByClassName('minutes')[0].innerHTML = mins;
-            idEl.getElementsByClassName('seconds')[0].innerHTML = secs;
-        
-            clearTimeout(countUpFromTime.interval);
-            countUpFromTime.interval = setTimeout(function(){ countUpFromTime(countFrom, idEl); }, 10);
-        }       
+            function countUpFromTime(countFrom, idEl) {
+                
+                // TO DO: fix timeZoneOffset affecting Date. Same in ranking.html
+                var now = new Date(),
+                    countFrom = new Date(countFrom),
+                    timeDifference = (now - countFrom);
+    
+                mins = Math.floor(timeDifference / 60000);
+                timeDifference %= 60000;
+                timeDifference = Math.floor(timeDifference / 100);
+                secs = (timeDifference / 10);
+                if(secs == Math.floor(secs)) secs += ".0";
+            
+                idEl.getElementsByClassName('minutes')[0].innerHTML = mins;
+                idEl.getElementsByClassName('seconds')[0].innerHTML = secs;
+            
+                clearTimeout(countUpFromTime.interval);
+                countUpFromTime.interval = setTimeout(function(){ countUpFromTime(countFrom, idEl); }, 10);
+            }         
 
 
 	 	
