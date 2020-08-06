@@ -237,6 +237,14 @@
         var startTime = cells[3].innerHTML;
         //startLine = { lat:cells[4].innerHTML, lng:cells[5].innerHTML};
 		//initMap(data,startLine);
+
+        console.log("Ready to query on eventID " + id);
+		document.getElementById("ranking_buttons").style.display = "block";
+		document.getElementById("athleteEventID").value = id;
+		document.getElementById("teamEventID").value = id;
+		
+		document.getElementById("athleteRankingButton").value = "Show Athlete Rankings for \"" + name + "\"";
+		document.getElementById("teamRankingButton").value = "Show Team Rankings for \"" + name + "\"";		
 		
         var idEl = document.getElementById("timerDisplay");
         idEl.style.display = "block";	
@@ -247,12 +255,7 @@
 		else idEl.style.display = "none";
 		
 		
-		document.getElementById("ranking_buttons").style.display = "block";
-		document.getElementById("athleteEventID").value = id;
-		document.getElementById("teamEventID").value = id;
-		
-		document.getElementById("athleteRankingButton").value = "Show Athlete Rankings for \"" + name + "\"";
-		document.getElementById("teamRankingButton").value = "Show Team Rankings for \"" + name + "\"";		
+
         /*
         
         document.getElementById("athleteButtonText").value = "Find Athletes in Event \"" + name + "\"";

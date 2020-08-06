@@ -136,7 +136,7 @@
             <input type="hidden" id="eventID_map" name="eventID">
             <input type="submit" value="Show Course Map" id = "loadMapText">
         </form>       
-        <form id="add_waypoint" method="post" action="/">
+        <form id="add_waypoint" method="post" action="/" style="display: none">
             <input type="hidden" id="eventID_add_point" name="eventID">
             <input type="hidden" id="xCurrLoc" name="xLocation" value=0>
             <input type="hidden" id="yCurrLoc" name="yLocation" value=0>
@@ -222,6 +222,7 @@
               currMapData = data;
               if(data.error) { alert(data.error); return; }
               document.getElementById("map").style.display = "block";
+              document.getElementById("add_waypoint").style.display = "block";
               
               getUserGeolocation();
               cacheMapValues(data);
@@ -243,6 +244,8 @@
             var formAndAuth = $(this).serialize() + // includes eventID
                         "&token=" + localStorage.getItem('token') +
                         "&userID=" + localStorage.getItem('userID');
+                        
+            console.log(formAndAuth);
             $.post("/not-just-another-race-timer/add_waypoint",formAndAuth, function(  data ) {
                 if(data.error) { alert(data.error); return; }
                 if(typeof data == "string") alert(data);
@@ -313,7 +316,7 @@
     }
     
     function cacheMapValues(data) {
-        
+        if(!data) return;
             
         if(data.length > 0) {
             startLine = {lat: data[0].latitude, lng: data[0].longitude };
