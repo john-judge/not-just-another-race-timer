@@ -122,7 +122,7 @@ app.post("/not-just-another-race-timer/find_live_events",isAuthenticated,(req,re
         console.log('connected as id ' + connection.threadId);
         var eventFilter = "%" + req.body.eventName + "%";
 
-        connection.query('SELECT e.eventID AS EventID, e.eventName AS Event, e.distance AS Distance, e.startTime, c.latitude, c.longitude FROM Events e LEFT JOIN CourseWaypoints c ON e.eventID = c.eventID WHERE c.distance = 0 AND e.eventName LIKE ? AND e.startTime IS NOT NULL AND e.finishTime IS NULL',[eventFilter], (err, rows) => {
+        connection.query('SELECT e.eventID AS EventID, e.eventName AS Event, e.distance AS Distance, e.startTime, c.latitude, c.longitude FROM Events e LEFT JOIN CourseWaypoints c ON e.eventID = c.eventID WHERE c.distance = 0 AND e.eventName LIKE ? AND e.startTime IS NOT NULL AND e.endTime IS NULL',[eventFilter], (err, rows) => {
             connection.release(); 
             if(err) { console.log(err); return; }
             resp.json(rows);
@@ -431,7 +431,7 @@ app.post("/not-just-another-race-timer/start_event_timer",isAuthenticated, funct
     });
 });
 
-/* End an event and trigger result finalizing (sets finishTime) */
+/* End an event and trigger result finalizing (sets endTime) */
 app.post("/not-just-another-race-timer/end_event_timer",isAuthenticated, function  (req,resp) {
     pool.getConnection((err, connection) => {
         if(err) { console.log(err); connection.release(); return; }
@@ -441,7 +441,7 @@ app.post("/not-just-another-race-timer/end_event_timer",isAuthenticated, functio
         nowISO = now.toISOString();
         // convert to MySQL datetime
         now = nowISO.split('T')[0] + ' '  + now.toTimeString().split(' ')[0];
-        connection.query('UPDATE Events SET finishTime = ? WHERE eventID = ? AND startTime IS NOT NULL',[now,req.body.eventID], (err, rows) => {
+        connection.query('UPDATE Events SET endTime = ? WHERE eventID = ? AND startTime IS NOT NULL',[now,req.body.eventID], (err, rows) => {
             // call back function
             if(err) { console.log(err); return; }
             connection.release(); // return the connection to pool
@@ -493,7 +493,7 @@ app.post("/not-just-another-race-timer/show_athlete_rankings",isAuthenticated,(r
     pool.getConnection((err, connection) => {
         if(err) { console.log(err); connection.release(); return; }
         console.log('connected to athlete ranking as id ' + connection.threadId);
-        connection.query('SELECT userID as AthleteID, name AS Athlete, bibNumber AS BibNumber,finishTime AS Time, currentDistance as Progress FROM ParticipatesIn p NATURAL JOIN Users NATURAL JOIN Events WHERE eventID = ? ORDER BY Progress DESC',[req.body.eventID], (err, rows) => {
+        connection.query('SELECT userID as AthleteID, name AS Athlete, bibNumber AS BibNumber,p.finishTime AS Time, currentDistance as Progress FROM ParticipatesIn p NATURAL JOIN Users NATURAL JOIN Events WHERE eventID = ? ORDER BY Progress DESC',[req.body.eventID], (err, rows) => {
             connection.release(); 
             if(err) { console.log(err); return; }
             resp.json(rows);
