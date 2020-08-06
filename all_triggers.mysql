@@ -1,0 +1,201 @@
+CREATE TRIGGER `add_waypoint` BEFORE INSERT ON `CourseWaypoints`
+ FOR EACH ROW BEGIN
+
+DECLARE previous_xLocation REAL;
+DECLARE previous_yLocation REAL;
+DECLARE previous_distance REAL;
+DECLARE new_distance REAL DEFAULT 0;
+DECLARE num_rows INT;
+
+SELECT COUNT(*) INTO num_rows FROM CourseWaypoints WHERE eventID = NEW.eventID;
+
+IF num_rows < 1 THEN
+
+SET NEW.distance = 0;
+
+UPDATE Events SET distance = 0 WHERE eventID = NEW.eventID;
+
+ELSE
+
+SELECT xLocation, yLocation, distance INTO previous_xLocation, previous_yLocation, previous_distance FROM CourseWaypoints WHERE eventID = NEW.eventID ORDER BY distance DESC LIMIT 1;
+
+SET new_distance = sqrt((POW(NEW.xLocation - previous_xLocation, 2)+ POW(NEW.yLocation - previous_yLocation, 2))) + previous_distance;
+
+SET NEW.distance = new_distance;
+
+UPDATE Events SET distance = new_distance WHERE eventID = NEW.eventID;
+
+END IF;
+
+END
+
+CREATE TRIGGER `update_captain_teamID` AFTER INSERT ON `Teams`
+ FOR EACH ROW UPDATE Users
+SET teamID = NEW.teamID
+WHERE userID = NEW.teamCaptain
+
+CREATE TRIGGER `finish_event` AFTER UPDATE ON `Events`
+ FOR EACH ROW BEGIN
+
+DECLARE cur_user INT;
+DECLARE user_distance decimal(20,3);
+DECLARE user_finish timestamp;
+DECLARE currentSeconds decimal(20,3);
+DECLARE extrapolatedSeconds decimal(20,3);
+DECLARE new_finishTime timestamp;
+DECLARE check_finish timestamp;
+DECLARE finished INT DEFAULT 0;
+
+DECLARE participates_cursor CURSOR FOR (SELECT userID, currentDistance, endTime FROM ParticipatesIn WHERE eventID = NEW.eventID);
+
+DECLARE CONTINUE HANDLER 
+FOR NOT FOUND SET finished = 1;
+
+IF NEW.endTime IS NOT NULL AND OLD.endTime IS NULL THEN
+
+OPEN participates_cursor;
+
+FETCH NEXT FROM participates_cursor INTO cur_user, user_distance, check_finish;
+
+WHILE finished = 0 DO
+
+IF (user_distance / NEW.distance) > .66 AND check_finish IS NOT NULL THEN
+
+SELECT MAX(timestamp) INTO user_finish FROM Spectates WHERE athleteID = cur_usr AND eventID = NEW.eventID;
+
+SET currentSeconds = UNIX_TIMESTAMP(user_finish) - UNIX_TIMESTAMP(NEW.startTime);
+
+SET extrapolatedSeconds = currentSeconds * (NEW.distance / user_distance);
+
+SET new_finishTime = TIMESTAMPADD(SECOND, extrapolatedSeconds, NEW.startTime);
+
+UPDATE ParticipatesIn SET finishTime = new_finishTime WHERE userID = cur_user AND eventID = NEW.eventID;
+
+UPDATE ParticipatesIn SET currentDistance = NEW.distance WHERE userID = cur_user AND eventID = NEW.eventID;
+
+END IF;
+
+FETCH NEXT FROM participates_cursor INTO cur_user, user_distance, check_finish;
+
+END WHILE;
+             
+CLOSE participates_cursor;
+
+END IF;
+
+END
+
+CREATE TRIGGER `check_finish` BEFORE UPDATE ON `ParticipatesIn`
+ FOR EACH ROW BEGIN
+
+DECLARE eventDistance INT;
+DECLARE user_finish timestamp;
+
+IF (NEW.currentDistance <> OLD.currentDistance) THEN
+
+SELECT distance INTO eventDistance FROM Events WHERE eventID = NEW.eventID;
+
+IF (eventDistance - NEW.currentDistance) < 100 THEN
+
+SELECT MAX(timestamp) INTO user_finish FROM Spectates WHERE athleteID = NEW.userID AND eventID = NEW.eventID;
+
+SET NEW.finishTime = user_finish;
+
+SET NEW.currentDistance = eventDistance;
+
+END IF;
+
+END IF;
+
+END
+
+CREATE TRIGGER `generate_bibNumber` BEFORE INSERT ON `ParticipatesIn`
+ FOR EACH ROW SET NEW.bibNumber = 1 + (SELECT COUNT(*) FROM ParticipatesIn WHERE eventID = NEW.eventID)
+
+CREATE TRIGGER `update_distance_and_ranks` BEFORE INSERT ON `Spectates`
+ FOR EACH ROW BEGIN
+
+DECLARE first_distance decimal(10,3);
+DECLARE first_xLocation decimal(10,3);
+DECLARE first_yLocation decimal(10,3);
+DECLARE second_distance decimal(10,3);
+DECLARE second_xLocation decimal(10,3);
+DECLARE second_yLocation decimal(10,3);
+DECLARE x_distance decimal(10,3);
+DECLARE y_distance decimal(10,3);
+DECLARE line_distance decimal(20,3);
+DECLARE part decimal(10,3);
+DECLARE perpendicular_x decimal(10,3);
+DECLARE perpendicular_y decimal(10,3);
+DECLARE distance_A decimal(10,3);
+DECLARE distance_B decimal(10,3);
+DECLARE cur_length decimal(10,3);
+DECLARE closest_length decimal(10,3) DEFAULT 9999999.999;
+DECLARE runner_distance decimal(10,3);
+DECLARE finished INT DEFAULT 0;
+DECLARE r INT;
+
+DECLARE waypoints_cursor CURSOR FOR (SELECT distance, xLocation, yLocation FROM CourseWaypoints WHERE eventID = NEW.eventID ORDER BY distance);
+
+DECLARE CONTINUE HANDLER 
+FOR NOT FOUND SET finished = 1;
+
+OPEN waypoints_cursor;
+
+FETCH NEXT FROM waypoints_cursor INTO first_distance, first_xLocation, first_yLocation;
+FETCH NEXT FROM waypoints_cursor INTO second_distance, second_xLocation, second_yLocation;
+
+WHILE finished = 0 DO
+
+SET x_distance = second_xLocation - first_xLocation;
+SET y_distance = second_yLocation - first_yLocation;
+SET line_distance = x_distance * x_distance + y_distance * y_distance;
+SET part = ((NEW.xLocation - first_xLocation)*x_distance+(NEW.yLocation - first_yLocation)*y_distance) / line_distance;
+SET perpendicular_x = first_xLocation + part * x_distance;
+SET perpendicular_y = first_yLocation + part * y_distance;
+
+IF (((perpendicular_x > first_xLocation) AND (perpendicular_x > second_xLocation)) OR ((perpendicular_x < first_xLocation) AND (perpendicular_x < second_xLocation))) THEN
+
+    SET distance_A = sqrt(POW(perpendicular_x - first_xLocation, 2) + POW(perpendicular_y - first_yLocation, 2));
+    SET distance_B = sqrt(POW(perpendicular_x - second_xLocation, 2) + POW(perpendicular_y - second_yLocation, 2));
+    IF (distance_A <= distance_B) THEN
+    	SET perpendicular_x = first_xLocation;
+        SET perpendicular_y = first_yLocation;
+    ELSE
+    	SET perpendicular_x = first_xLocation;
+        SET perpendicular_y = first_yLocation;
+    END IF;
+END IF;
+             
+SET cur_length = sqrt(POW(perpendicular_x - NEW.xLocation, 2) + POW(perpendicular_y - NEW.yLocation, 2));
+             
+IF cur_length < closest_length THEN
+     SET closest_length = cur_length;
+     SET runner_distance = first_distance + sqrt(POW(perpendicular_x - first_xLocation, 2) + POW(perpendicular_y - first_yLocation, 2));
+END IF;
+             
+SET first_distance = second_distance;
+SET first_xLocation = second_xLocation;
+SET first_yLocation = second_yLocation;
+             
+FETCH NEXT FROM waypoints_cursor INTO second_distance, second_xLocation, second_yLocation;
+             
+END WHILE;
+             
+CLOSE waypoints_cursor;
+
+IF closest_length >= 0 THEN 
+             
+UPDATE ParticipatesIn SET currentDistance = runner_distance WHERE userID = NEW.athleteID AND eventID = NEW.eventID;
+
+SET @r = 0;
+UPDATE ParticipatesIn SET rank = @r:= (@r+1) WHERE eventID = NEW.eventID ORDER BY currentDistance DESC;
+
+ELSE 
+
+SIGNAL SQLSTATE '45000'
+SET MESSAGE_TEXT = 'Too far from course';
+
+END IF;
+             
+END
