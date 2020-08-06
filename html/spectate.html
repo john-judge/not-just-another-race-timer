@@ -170,12 +170,12 @@
         
         <form id="commit_spectate" method="post" action="/" style="display:none">
             <input type="text" name="comment" placeholder="Enter a comment!" id = "commentInput"><br>
-            <input type="hidden" id="spectateEventID" name="eventID">
-            <input type="hidden" id="spectateAthleteID" name="athleteID">
-            <input type="hidden" id="xCurrLoc" name="xLocation" value=0>
-            <input type="hidden" id="yCurrLoc" name="yLocation" value=0>
-            <input type="hidden" id="lng" name="longitude">
-            <input type="hidden" id="lat" name="latitude">
+            <input type="text" id="spectateEventID" name="eventID">
+            <input type="text" id="spectateAthleteID" name="athleteID">
+            <input type="text" id="xCurrLoc" name="xLocation" value=0>
+            <input type="text" id="yCurrLoc" name="yLocation" value=0>
+            <input type="text" id="lng" name="longitude">
+            <input type="text" id="lat" name="latitude">
             <input type="submit" value="Submit Location and Time as Spectator!" id = "spectate_button">
         </form>    	<br>        
         
@@ -262,7 +262,8 @@
 
             var formAndAuth = $(this).serialize() +
                         "&token=" + token +
-                        "&userID=" + userID;    	 		
+                        "&userID=" + userID;  
+            console.log(formAndAuth);
 	 		$.post("/not-just-another-race-timer/commit_spectate",formAndAuth, function(  data ) {
     	 		  if(data.error) { alert(data.error); return; }
     	 		  if(typeof data == "string") alert(data);
@@ -282,7 +283,7 @@
             startLine = { lat:cells[4].innerHTML, lng:cells[5].innerHTML};
     		
     		document.getElementById("map").style.display = "block";
-
+    		document.getElementById("spectateEventID").value = id; 
             var idEl = document.getElementById("timerDisplay");
             idEl.style.display = "block";
             
@@ -317,7 +318,7 @@
             document.getElementById("find_athletes").style.display = "block";
             document.getElementById("commit_spectate").style.display = "block";
             document.getElementById("spectateAthleteID").value = id; 
-            document.getElementById("spectateEventID").value = id; 
+            getUserGeolocation();
         }        
                 
     
@@ -360,7 +361,7 @@
         }
         
         function cacheMapValues(data) {
-            
+            if(!data) return;
                 
             if(data.length > 0) {
                 startLine = {lat: data[0].latitude, lng: data[0].longitude };
