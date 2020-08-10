@@ -1,7 +1,9 @@
  # Project Description
  
   [Extended Documentation](https://wiki.illinois.edu/wiki/x/-5RHKw)
+  
   [Website](https://jmjudge2.web.illinois.edu/not-just-another-race-timer)
+  
   [Demo Video](https://youtu.be/bQq7CohI-1Y)
   
   
