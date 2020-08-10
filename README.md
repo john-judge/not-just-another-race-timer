@@ -1,9 +1,9 @@
  # Project Description
  
-  [This web application is not just another race timer.](https://wiki.illinois.edu/wiki/x/1pxHKw)
+  [Extended Documentation](https://wiki.illinois.edu/wiki/x/-5RHKw)
+  [Website](https://jmjudge2.web.illinois.edu/not-just-another-race-timer)
+  [Demo Video](https://youtu.be/bQq7CohI-1Y)
   
-  [Requirements](https://wiki.illinois.edu/wiki/display/CS411SU20/Project+Track+1)
-
   
  ## Meeting 8/2
  
